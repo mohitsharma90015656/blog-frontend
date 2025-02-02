@@ -2,10 +2,11 @@ import { View, Text } from "react-native";
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { COLORS } from "../constants/theme";
-import { Ionicons } from "@expo/vector-icons";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
 import Home from "../screens/Home";
 import Profile from "../screens/Profile";
 import { useNavigation } from "@react-navigation/native";
+import Module from "../screens/Module";
 const Tab = createBottomTabNavigator();
 
 const screenOptions = {
@@ -23,7 +24,7 @@ const screenOptions = {
 };
 
 const BottomTabNavigation = () => {
-    const navigation = useNavigation()
+  const navigation = useNavigation();
   return (
     <Tab.Navigator screenOptions={screenOptions}>
       <Tab.Screen
@@ -36,6 +37,21 @@ const BottomTabNavigation = () => {
                 name={focused ? "home" : "home-outline"}
                 size={24}
                 color={focused ? COLORS.primary : COLORS.gray2}
+              />
+            );
+          },
+        }}
+      />
+      <Tab.Screen
+        name="Menu"
+        component={Module}
+        options={{
+          tabBarIcon: ({ focused, color }) => {
+            return (
+              <AntDesign
+                name={focused ? "menu-unfold" : "menu-fold"}
+                size={24}
+                color="black"
               />
             );
           },
