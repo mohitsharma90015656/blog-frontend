@@ -12,9 +12,17 @@ import SearchComponent from "../components/SearchComponent";
 import Button from "../components/Button";
 import InputField from "../components/InputField";
 import OutlineBtn from "../components/OutlineBtn";
+import { useNavigation } from "@react-navigation/native";
 
 const Profile = () => {
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+ 
+  const navigation = useNavigation()
+
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(true);
+
+  const handleSignUp = () => {
+    navigation.navigate("signUp")
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -49,7 +57,7 @@ const Profile = () => {
             </TouchableOpacity>
           </View>
           <View>
-            <OutlineBtn title={"Sign Up"} />
+            <OutlineBtn title={"Sign Up"} onPress={handleSignUp} />
           </View>
         </>
       }

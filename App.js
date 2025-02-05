@@ -1,8 +1,9 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { StyleSheet, } from "react-native";
+import { StyleSheet } from "react-native";
 import BottomTabNavigation from "./navigation/BottomTabNavigation";
 import BlogDetails from "./screens/BlogDetails";
+import SignUp from "./screens/SignUp";
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -14,9 +15,14 @@ export default function App() {
           component={BottomTabNavigation}
           options={{ headerShown: false }}
         />
-          <Stack.Screen
+        <Stack.Screen
           name="blogDetails"
           component={BlogDetails}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="signUp"
+          component={SignUp}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>
