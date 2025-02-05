@@ -3,7 +3,9 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import moment from "moment";
 import { BLOG_DEFAULT_IMAGE } from "../constants/Config";
-const NewsCard = ({ onPress, item }) => {
+const NewsCard = ({ onPress, item ,isUserLoggedIn}) => {
+
+
   return (
     <TouchableOpacity onPress={onPress}>
       <View style={styles.card}>
@@ -27,9 +29,9 @@ const NewsCard = ({ onPress, item }) => {
             {item?.likeBy?.length} Likes • {item?.commentedBy?.length} Comment
           </Text>
         </View>
-        <TouchableOpacity>
+        {isUserLoggedIn && <TouchableOpacity>
           <Icon name="bookmark" size={20} color="#666" />
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </View>
     </TouchableOpacity>
   );

@@ -4,7 +4,7 @@ import { COLORS } from "../constants/theme";
 
 const Button = ({ title, onPress }) => {
   return (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={onPress}>
       <View style={styles.container}>
         <Text style={styles.btnTxt}>{title}</Text>
       </View>

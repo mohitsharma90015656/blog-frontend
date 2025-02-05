@@ -1,4 +1,5 @@
 import {
+  Alert,
   Image,
   SafeAreaView,
   StyleSheet,
@@ -6,24 +7,76 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import SearchComponent from "../components/SearchComponent";
 import Button from "../components/Button";
 import InputField from "../components/InputField";
 import OutlineBtn from "../components/OutlineBtn";
-import { useNavigation } from "@react-navigation/native";
-
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import axios from "axios";
+import { BASE_URL } from "../constants/Config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const Profile = () => {
- 
-  const navigation = useNavigation()
+  const navigation = useNavigation();
 
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(true);
-
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState("");
+  const [email, setEmail] = useState("");
+  const [Password, setPassword] = useState("");
   const handleSignUp = () => {
-    navigation.navigate("signUp")
-  }
+    navigation.navigate("signUp");
+  };
+  const login = async () => {
+    try {
+      const response = await axios.post(`${BASE_URL}api/v1/users/login`, {
+        email: email,
+        password: Password,
+      });
 
+      const data = response.data;
+      if (data?.success) {
+        navigation.navigate("Home");
+        await AsyncStorage.setItem("userData", JSON.stringify(data));
+      } else {
+        Alert("Please give correct crediantials");
+      }
+    } catch (error) {
+      if (error.response) {
+        console.error("Login failed:", error.response.data);
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+      } else {
+        console.error("Error:", error.message);
+      }
+      throw error;
+    }
+  };
+  useEffect(() => {
+    getUserData();
+  }, []);
+    useFocusEffect(
+      React.useCallback(() => {
+        setIsUserLoggedIn("")
+        getUserData();
+        return () => {};
+      }, [])
+    );
+  const getUserData = async () => {
+    try {
+      const userData = await AsyncStorage.getItem("userData");
+
+      if (userData !== null) {
+        const parsedUserData = JSON.parse(userData);
+        setIsUserLoggedIn(parsedUserData);
+      } else {
+        console.log("No user data found in AsyncStorage");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error retrieving user data:", error);
+      throw error;
+    }
+  };
   return (
     <SafeAreaView style={styles.container}>
       {isUserLoggedIn && (
@@ -43,15 +96,23 @@ const Profile = () => {
           </View>
         </View>
       )}
-      {!isUserLoggedIn &&
+      {!isUserLoggedIn && (
         <>
           <View style={styles.imgContainer}>
             <Image style={styles.img} source={require("../assets/logo.png")} />
           </View>
           <View style={styles.card}>
-            <InputField placeholder={"Enter Your Email"} />
-            <InputField placeholder={"Enter Password"} />
-            <Button title={"Login"} />
+            <InputField
+              placeholder={"Enter Your Email"}
+              value={email}
+              onChangeText={setEmail}
+            />
+            <InputField
+              placeholder={"Enter Password"}
+              value={Password}
+              onChangeText={setPassword}
+            />
+            <Button title={"Login"} onPress={login} />
             <TouchableOpacity style={styles.forgotTxt}>
               <Text style={{ color: "white" }}>Forgotten Password?</Text>
             </TouchableOpacity>
@@ -60,7 +121,7 @@ const Profile = () => {
             <OutlineBtn title={"Sign Up"} onPress={handleSignUp} />
           </View>
         </>
-      }
+      )}
     </SafeAreaView>
   );
 };

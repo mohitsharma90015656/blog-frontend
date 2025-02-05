@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -22,7 +23,7 @@ const SearchComponent = ({
         style={[
           styles.searchBarInnerContainer,
           {
-            paddingHorizontal: 8,
+            paddingHorizontal: Platform.OS == "ios"? 8 : 0,
           },
         ]}
       >

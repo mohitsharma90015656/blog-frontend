@@ -19,6 +19,7 @@ import NewsCard from "../components/NewsCard";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { BASE_URL } from "../constants/Config";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const Home = () => {
   const categories = [
     "All",
@@ -32,9 +33,12 @@ const Home = () => {
   const navigation = useNavigation();
   const [blogListData, setBlogListData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState("");
   useFocusEffect(
     React.useCallback(() => {
-      if (selectedCategory === "My Blogs") {
+      setIsUserLoggedIn("")
+      getUserData();
+      if (selectedCategory === "My blogs") {
         setBlogListData([]);
         setLoading(true);
         fetchMyBlogList();
@@ -46,11 +50,32 @@ const Home = () => {
       return () => {};
     }, [selectedCategory])
   );
+  
+  const getUserData = async () => {
+    try {
+      const userData = await AsyncStorage.getItem("userData");
+      if (userData != null) {
+        const parsedUserData = JSON.parse(userData);
+        setIsUserLoggedIn(parsedUserData?.data);
+      } else {
+        console.log("No user data found in AsyncStorage");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error retrieving user data:", error);
+      throw error;
+    }
+  };
 
   const fetchMyBlogList = async () => {
+    const accessToken = isUserLoggedIn.accessToken
     try {
       const response = await axios.get(
-        `${BASE_URL}api/v1/blog/blogUserWiseList`
+        `${BASE_URL}api/v1/blog/blogUserWiseList`,{
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // Set token in Authorization header
+          },
+        }
       );
       setLoading(false);
       setBlogListData(response?.data?.data);
@@ -60,10 +85,15 @@ const Home = () => {
       throw error;
     }
   };
-
+  
   const fetchReportList = async () => {
+    const accessToken = isUserLoggedIn.accessToken
     try {
-      const response = await axios.get(`${BASE_URL}api/v1/blog/blogList`);
+      const response = await axios.get(`${BASE_URL}api/v1/blog/blogList`,{
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // Set token in Authorization header
+        },
+      });
       setLoading(false);
       setBlogListData(response?.data?.data);
     } catch (error) {
@@ -76,8 +106,18 @@ const Home = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.userNameContainer}>
-        <EvilIcons name="user" size={46} color="black" />
-        <View style={{ flex: 1 }}>
+        {isUserLoggedIn?.user?.avatar ? (
+          <Image
+            source={{
+              uri: isUserLoggedIn?.user?.avatar,
+            }}
+            style={{ height: 36, width: 36, borderRadius: 50 }}
+          />
+        ) : (
+          <EvilIcons name="user" size={46} color="black" />
+        )}
+
+        <View style={{ flex: 1, }}>
           <SearchComponent />
         </View>
         <View
@@ -92,54 +132,6 @@ const Home = () => {
         </View>
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.card}>
-          <ImageBackground
-            source={{
-              uri: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Image_created_with_a_mobile_phone.png",
-            }}
-            style={styles.image}
-            imageStyle={{ borderRadius: 12 }}
-          >
-            <View style={styles.details}>
-              <Text style={styles.author}>Esther Howard • Fashion</Text>
-              <Text style={styles.title}>
-                Fashion Icon's New Collection{"\n"}Embraces Nature Elegance
-              </Text>
-            </View>
-          </ImageBackground>
-        </View>
-        <View style={styles.card}>
-          <ImageBackground
-            source={{
-              uri: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Image_created_with_a_mobile_phone.png",
-            }}
-            style={styles.image}
-            imageStyle={{ borderRadius: 12 }}
-          >
-            <View style={styles.details}>
-              <Text style={styles.author}>Esther Howard • Fashion</Text>
-              <Text style={styles.title}>
-                Fashion Icon's New Collection{"\n"}Embraces Nature Elegance
-              </Text>
-            </View>
-          </ImageBackground>
-        </View>
-        <View style={styles.card}>
-          <ImageBackground
-            source={{
-              uri: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Image_created_with_a_mobile_phone.png",
-            }}
-            style={styles.image}
-            imageStyle={{ borderRadius: 12 }}
-          >
-            <View style={styles.details}>
-              <Text style={styles.author}>Esther Howard • Fashion</Text>
-              <Text style={styles.title}>
-                Fashion Icon's New Collection{"\n"}Embraces Nature Elegance
-              </Text>
-            </View>
-          </ImageBackground>
-        </View>
         <View style={styles.card}>
           <ImageBackground
             source={{
@@ -204,6 +196,7 @@ const Home = () => {
                 onPress={() =>
                   navigation.navigate("blogDetails", { blogId: item?._id })
                 }
+                isUserLoggedIn={isUserLoggedIn}
                 item={item}
               />
             )}
