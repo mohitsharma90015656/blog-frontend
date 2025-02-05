@@ -54,6 +54,54 @@ const Home = () => {
             </View>
           </ImageBackground>
         </View>
+        <View style={styles.card}>
+          <ImageBackground
+            source={{
+              uri: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Image_created_with_a_mobile_phone.png",
+            }}
+            style={styles.image}
+            imageStyle={{ borderRadius: 12 }}
+          >
+            <View style={styles.details}>
+              <Text style={styles.author}>Esther Howard • Fashion</Text>
+              <Text style={styles.title}>
+                Fashion Icon's New Collection{"\n"}Embraces Nature Elegance
+              </Text>
+            </View>
+          </ImageBackground>
+        </View>
+        <View style={styles.card}>
+          <ImageBackground
+            source={{
+              uri: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Image_created_with_a_mobile_phone.png",
+            }}
+            style={styles.image}
+            imageStyle={{ borderRadius: 12 }}
+          >
+            <View style={styles.details}>
+              <Text style={styles.author}>Esther Howard • Fashion</Text>
+              <Text style={styles.title}>
+                Fashion Icon's New Collection{"\n"}Embraces Nature Elegance
+              </Text>
+            </View>
+          </ImageBackground>
+        </View>
+        <View style={styles.card}>
+          <ImageBackground
+            source={{
+              uri: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Image_created_with_a_mobile_phone.png",
+            }}
+            style={styles.image}
+            imageStyle={{ borderRadius: 12 }}
+          >
+            <View style={styles.details}>
+              <Text style={styles.author}>Esther Howard • Fashion</Text>
+              <Text style={styles.title}>
+                Fashion Icon's New Collection{"\n"}Embraces Nature Elegance
+              </Text>
+            </View>
+          </ImageBackground>
+        </View>
         <View style={{}}>
           <Text
             style={{
@@ -106,7 +154,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 12,
-    paddingTop: 16,
+    paddingTop: 25,
     justifyContent: "space-between",
   },
   container: { backgroundColor: "white", flex: 1 },
