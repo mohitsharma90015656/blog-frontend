@@ -1,27 +1,37 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
-
-const NewsCard = () => {
+import moment from "moment";
+import { BLOG_DEFAULT_IMAGE } from "../constants/Config";
+const NewsCard = ({ onPress, item }) => {
   return (
-    <View style={styles.card}>
-      <Image
-        source={{
-          uri: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Image_created_with_a_mobile_phone.png",
-        }}
-        style={styles.profileImage}
-      />
-      <View style={styles.textContainer}>
-        <Text style={styles.author}>Marlina Kampret</Text>
-        <Text style={styles.title} numberOfLines={2}>
-          China is set to shatter its wind and solar target five years early...
-        </Text>
-        <Text style={styles.meta}>Wed, 05 July 2023 • Environment</Text>
+    <TouchableOpacity onPress={onPress}>
+      <View style={styles.card}>
+        <Image
+          source={{
+            uri: item?.blogImage == "" ? BLOG_DEFAULT_IMAGE : item?.blogImage,
+          }}
+          style={styles.profileImage}
+        />
+        <View style={styles.textContainer}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+            <Text style={styles.author}>{item?.owner?.fullName}</Text>
+          </View>
+          <Text style={styles.title} numberOfLines={2}>
+            {item?.title}
+          </Text>
+          <Text style={styles.meta}>
+            {moment(item?.createdAt).format("ddd, DD MMM YYYY")} • Environment
+          </Text>
+          <Text style={[styles.meta, { paddingTop: 2 }]}>
+            {item?.likeBy?.length} Likes • {item?.commentedBy?.length} Comment
+          </Text>
+        </View>
+        <TouchableOpacity>
+          <Icon name="bookmark" size={20} color="#666" />
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity>
-        <Icon name="bookmark" size={20} color="#666" />
-      </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -34,7 +44,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     margin: 12,
     borderWidth: 0.3,
-    borderColor: "lightgray"
+    borderColor: "lightgray",
+    marginTop: 0,
   },
   profileImage: {
     width: 70,

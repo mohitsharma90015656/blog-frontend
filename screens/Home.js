@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   ImageBackground,
@@ -9,16 +10,69 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import SearchComponent from "../components/SearchComponent";
 import { EvilIcons, FontAwesome } from "@expo/vector-icons";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import NewsCard from "../components/NewsCard";
-
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { BASE_URL } from "../constants/Config";
+import axios from "axios";
 const Home = () => {
-  const categories = ["All", "Fashion", "Politics", "Sports", "Tech"];
+  const categories = [
+    "All",
+    "My blogs",
+    "Fashion",
+    "Politics",
+    "Sports",
+    "Tech",
+  ];
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const navigation = useNavigation();
+  const [blogListData, setBlogListData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (selectedCategory === "My Blogs") {
+        setBlogListData([]);
+        setLoading(true);
+        fetchMyBlogList();
+      } else {
+        setBlogListData([]);
+        setLoading(true);
+        fetchReportList();
+      }
+      return () => {};
+    }, [selectedCategory])
+  );
+
+  const fetchMyBlogList = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}api/v1/blog/blogUserWiseList`
+      );
+      setLoading(false);
+      setBlogListData(response?.data?.data);
+    } catch (error) {
+      setLoading(false);
+      console.error("Error fetching report list:", error);
+      throw error;
+    }
+  };
+
+  const fetchReportList = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}api/v1/blog/blogList`);
+      setLoading(false);
+      setBlogListData(response?.data?.data);
+    } catch (error) {
+      setLoading(false);
+      console.error("Error fetching report list:", error);
+      throw error;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.userNameContainer}>
@@ -37,7 +91,7 @@ const Home = () => {
           <FontAwesome name="bell-o" size={24} color="black" />
         </View>
       </View>
-      <ScrollView>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <ImageBackground
             source={{
@@ -139,8 +193,24 @@ const Home = () => {
             )}
           />
         </View>
-        <View style={{ paddingTop: 8 }}>
-          <NewsCard />
+        <View style={{ paddingTop: 8, marginTop: 12 }}>
+          <FlatList
+            data={blogListData}
+            nestedScrollEnabled={true}
+            showsVerticalScrollIndicator={false}
+            keyExtractor={(item, index) => index}
+            renderItem={({ item }) => (
+              <NewsCard
+                onPress={() =>
+                  navigation.navigate("blogDetails", { blogId: item?._id })
+                }
+                item={item}
+              />
+            )}
+            ListHeaderComponent={
+              <>{loading ? <ActivityIndicator size={"large"} /> : null}</>
+            }
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -188,7 +258,7 @@ const styles = StyleSheet.create({
   image: {
     flex: 1,
     width: "100%",
-    height: 300,
+    height: 200,
   },
   details: {
     padding: 12,
