@@ -43,13 +43,13 @@ const BottomTabNavigation = () => {
         }}
       />
       <Tab.Screen
-        name="Menu"
+        name="Saved"
         component={Module}
         options={{
           tabBarIcon: ({ focused, color }) => {
             return (
-              <AntDesign
-                name={focused ? "menu-unfold" : "menu-fold"}
+              <Ionicons
+                name={focused ? "bookmark" : "bookmark-outline"}
                 size={24}
                 color="black"
               />
