@@ -2,7 +2,7 @@ import { View, Text } from "react-native";
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { COLORS } from "../constants/theme";
-import { AntDesign, Ionicons } from "@expo/vector-icons";
+import { AntDesign, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import Home from "../screens/Home";
 import Profile from "../screens/Profile";
 import { useNavigation } from "@react-navigation/native";
@@ -48,10 +48,10 @@ const BottomTabNavigation = () => {
         options={{
           tabBarIcon: ({ focused, color }) => {
             return (
-              <Ionicons
-                name={focused ? "bookmark" : "bookmark-outline"}
+              <FontAwesome6
+                name="blogger-b"
                 size={24}
-                color="black"
+                color={focused ? COLORS.primary : COLORS.gray2}
               />
             );
           },

@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import SearchComponent from "../components/SearchComponent";
-import { EvilIcons, FontAwesome } from "@expo/vector-icons";
+import { EvilIcons, FontAwesome, Ionicons } from "@expo/vector-icons";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import NewsCard from "../components/NewsCard";
@@ -20,6 +20,7 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { BASE_URL } from "../constants/Config";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSelector } from "react-redux";
 const Home = () => {
   const categories = [
     "All",
@@ -33,60 +34,19 @@ const Home = () => {
   const navigation = useNavigation();
   const [blogListData, setBlogListData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState("");
+  const isUserLoggedIn = useSelector((state) => state.userAuth || {});
+
+  const accessToken = isUserLoggedIn.token || null;
+  const userData = isUserLoggedIn.user || null;
   useFocusEffect(
     React.useCallback(() => {
-      setIsUserLoggedIn("")
-      getUserData();
-      if (selectedCategory === "My blogs") {
-        setBlogListData([]);
-        setLoading(true);
-        fetchMyBlogList();
-      } else {
-        setBlogListData([]);
-        setLoading(true);
-        fetchReportList();
-      }
+      setBlogListData([]);
+      setLoading(true);
+      fetchReportList();
       return () => {};
-    }, [selectedCategory])
+    }, [])
   );
-  
-  const getUserData = async () => {
-    try {
-      const userData = await AsyncStorage.getItem("userData");
-      await AsyncStorage.removeItem()
-      if (userData != null) {
-        const parsedUserData = JSON.parse(userData);
-        setIsUserLoggedIn(parsedUserData?.data);
-      } else {
-        console.log("No user data found in AsyncStorage");
-        return null;
-      }
-    } catch (error) {
-      console.error("Error retrieving user data:", error);
-      throw error;
-    }
-  };
 
-  const fetchMyBlogList = async () => {
-    const accessToken = isUserLoggedIn.accessToken
-    try {
-      const response = await axios.get(
-        `${BASE_URL}api/v1/blog/blogUserWiseList`,{
-          headers: {
-            Authorization: `Bearer ${accessToken}`, // Set token in Authorization header
-          },
-        }
-      );
-      setLoading(false);
-      setBlogListData(response?.data?.data);
-    } catch (error) {
-      setLoading(false);
-      console.error("Error fetching report list:", error);
-      throw error;
-    }
-  };
-  
   const fetchReportList = async () => {
     try {
       const response = await axios.get(`${BASE_URL}api/v1/blog/blogList`);
@@ -102,31 +62,33 @@ const Home = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.userNameContainer}>
-        {isUserLoggedIn?.user?.avatar ? (
+        {userData?.avatar ? (
           <Image
             source={{
-              uri: isUserLoggedIn?.user?.avatar,
+              uri: userData?.avatar,
             }}
-            style={{ height: 36, width: 36, borderRadius: 50 }}
+            style={{ height: 30, width: 30, borderRadius: 50 }}
           />
         ) : (
-          <EvilIcons name="user" size={46} color="black" />
+          <EvilIcons name="user" size={40} color="black" />
         )}
 
-        <View style={{ flex: 1, }}>
-          <SearchComponent />
-        </View>
+      <View><Text style={{fontSize: 16,fontWeight: 500}}>Mohit sharma</Text></View>
         <View
           style={{
             borderWidth: 0.5,
             borderColor: "lightgray",
-            padding: 6,
+            padding: 4,
             borderRadius: 50,
           }}
         >
-          <FontAwesome name="bell-o" size={24} color="black" />
+          <FontAwesome name="bell-o" size={20} color="black" />
         </View>
       </View>
+      <View style={{paddingHorizontal: 12 }}>
+          <SearchComponent />
+      
+        </View>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <ImageBackground
@@ -197,7 +159,13 @@ const Home = () => {
               />
             )}
             ListHeaderComponent={
-              <>{loading ? <ActivityIndicator size={"large"} /> : null}</>
+              <>
+                {loading ? (
+                  <View style={{ padding: 16 }}>
+                    <ActivityIndicator size={"large"} />
+                  </View>
+                ) : null}
+              </>
             }
           />
         </View>

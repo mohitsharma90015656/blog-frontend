@@ -6,6 +6,7 @@ import BlogDetails from "./screens/BlogDetails";
 import SignUp from "./screens/SignUp";
 import { Provider } from "react-redux";
 import store from "./redux/store";
+import Bookmarked from "./screens/Bookmarked";
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -26,6 +27,11 @@ export default function App() {
           <Stack.Screen
             name="signUp"
             component={SignUp}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="bookmarked"
+            component={Bookmarked}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>
