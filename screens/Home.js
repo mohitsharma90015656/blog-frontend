@@ -54,6 +54,7 @@ const Home = () => {
   const getUserData = async () => {
     try {
       const userData = await AsyncStorage.getItem("userData");
+      await AsyncStorage.removeItem()
       if (userData != null) {
         const parsedUserData = JSON.parse(userData);
         setIsUserLoggedIn(parsedUserData?.data);
@@ -87,13 +88,8 @@ const Home = () => {
   };
   
   const fetchReportList = async () => {
-    const accessToken = isUserLoggedIn.accessToken
     try {
-      const response = await axios.get(`${BASE_URL}api/v1/blog/blogList`,{
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // Set token in Authorization header
-        },
-      });
+      const response = await axios.get(`${BASE_URL}api/v1/blog/blogList`);
       setLoading(false);
       setBlogListData(response?.data?.data);
     } catch (error) {

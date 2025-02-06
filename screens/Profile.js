@@ -13,19 +13,31 @@ import SearchComponent from "../components/SearchComponent";
 import Button from "../components/Button";
 import InputField from "../components/InputField";
 import OutlineBtn from "../components/OutlineBtn";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { BASE_URL } from "../constants/Config";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useDispatch, useSelector } from "react-redux";
+import { login as loginAction, logout as logoutAction } from "../redux/AuthSlice";
+
 const Profile = () => {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const auth = useSelector((state) => state.userAuth || {});
 
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState("");
+  const isAuthenticated = auth.isAuthenticated || false;
+  const userData = auth.user || null;
+  const accessToken = auth.token || null
+  console.log("isAuthenticated :", isAuthenticated);
+  console.log("userData: ", userData);
+  console.log("access Token : ", accessToken);
+
   const [email, setEmail] = useState("");
   const [Password, setPassword] = useState("");
+
   const handleSignUp = () => {
     navigation.navigate("signUp");
   };
+
   const login = async () => {
     try {
       const response = await axios.post(`${BASE_URL}api/v1/users/login`, {
@@ -33,70 +45,67 @@ const Profile = () => {
         password: Password,
       });
 
-      const data = response.data;
+      const data = response?.data;
       if (data?.success) {
+        dispatch(
+          loginAction({
+            user: data?.data?.user,
+            token: data?.data?.accessToken,
+          })
+        );
         navigation.navigate("Home");
-        await AsyncStorage.setItem("userData", JSON.stringify(data));
       } else {
-        Alert("Please give correct crediantials");
+        Alert("Please give correct credentials");
       }
     } catch (error) {
-      if (error.response) {
-        console.error("Login failed:", error.response.data);
-      } else if (error.request) {
-        console.error("No response received:", error.request);
-      } else {
-        console.error("Error:", error.message);
-      }
-      throw error;
+      console.error("Login failed:", error.response?.data || error.message);
+      Alert.alert("Login Error", "Something went wrong. Please try again.");
     }
   };
-  useEffect(() => {
-    getUserData();
-  }, []);
-    useFocusEffect(
-      React.useCallback(() => {
-        setIsUserLoggedIn("")
-        getUserData();
-        return () => {};
-      }, [])
-    );
-  const getUserData = async () => {
-    try {
-      const userData = await AsyncStorage.getItem("userData");
 
-      if (userData !== null) {
-        const parsedUserData = JSON.parse(userData);
-        setIsUserLoggedIn(parsedUserData);
-      } else {
-        console.log("No user data found in AsyncStorage");
-        return null;
+  const handleLogOut = async() => {
+    try {
+      const response = await axios.post(`${BASE_URL}api/v1/users/logout`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+      const data = response?.data
+      console.log("userData: ", data )
+
+      if(data?.success){
+        dispatch(logoutAction())
       }
     } catch (error) {
-      console.error("Error retrieving user data:", error);
-      throw error;
+      console.error("Logout Failed :", error.response?.data || error.message)
+      Alert.alert("Logout Error", "Something went wrong. Please try again.");
     }
-  };
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      {isUserLoggedIn && (
-        <View style={styles.userNameContainer}>
-          <View style={{ flex: 1 }}>
-            <SearchComponent />
+      {isAuthenticated ? (
+        <>
+          <View style={styles.userNameContainer}>
+            <View style={{ flex: 1 }}>
+              <SearchComponent />
+            </View>
+            <View
+              style={{
+                borderWidth: 0.5,
+                borderColor: "lightgray",
+                padding: 6,
+                borderRadius: 50,
+              }}
+            >
+              <FontAwesome name="bell-o" size={24} color="black" />
+            </View>
           </View>
-          <View
-            style={{
-              borderWidth: 0.5,
-              borderColor: "lightgray",
-              padding: 6,
-              borderRadius: 50,
-            }}
-          >
-            <FontAwesome name="bell-o" size={24} color="black" />
+          <View>
+            <OutlineBtn title={"Logout"} onPress={handleLogOut} />
           </View>
-        </View>
-      )}
-      {!isUserLoggedIn && (
+        </>
+      ) : (
         <>
           <View style={styles.imgContainer}>
             <Image style={styles.img} source={require("../assets/logo.png")} />
