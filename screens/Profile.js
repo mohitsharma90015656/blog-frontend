@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Alert,
   Image,
   KeyboardAvoidingView,
@@ -10,11 +11,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Button from "../components/Button";
 import InputField from "../components/InputField";
 import OutlineBtn from "../components/OutlineBtn";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { BASE_URL } from "../constants/Config";
 import { useDispatch, useSelector } from "react-redux";
@@ -38,11 +39,11 @@ const Profile = () => {
   const userData = auth.user || null;
   const accessToken = auth.token || null;
 
-  // console.log("isAuthenticated :", isAuthenticated);
-  // console.log("userData: ", userData);
-  // console.log("access Token : ", accessToken);
-
   const [selectedTab, setSelectedTab] = useState("Login");
+  const [logInLoading, setLogInLoading] = useState(false);
+  const [loggingError, setLoggingError] = useState(null);
+  const [signUpLoading, setSignUpLoading] = useState(false);
+
 
   //Login State
   const [email, setEmail] = useState("");
@@ -59,7 +60,7 @@ const Profile = () => {
   const [modalVisible, setModalVisible] = useState(false);
 
   const openModal = () => setModalVisible(true);
-  const closeModal = () => setModalVisible(!modalVisible);
+  const closeModal = () => setModalVisible(false);
 
   const takeSelfie = async () => {
     let result = await ImagePicker.launchCameraAsync({
@@ -73,6 +74,8 @@ const Profile = () => {
       setProfileImage(result.assets[0].uri);
       closeModal();
     }
+
+    if (result.canceled) return;
   };
 
   const pickImage = async () => {
@@ -87,19 +90,47 @@ const Profile = () => {
       setProfileImage(result.assets[0].uri);
       closeModal();
     }
+
+    if (result.canceled) return;
   };
   console.log("image result : ", profileImage);
+
+  
 
   const handleTabPress = (tab, index) => {
     setSelectedTab(tab);
     translateX.value = withTiming(index * 150, { duration: 300 });
   };
 
+  const clearInputFields = () => {
+    setEmail("");
+    setPassword("");
+    setUserName("");
+    setFullName("");
+    setSignUpEmail("");
+    setSignUpPassword("");
+    setProfileImage(null);
+    setLoggingError(null);
+  };
+
+  //Clearing the text input fields when tab changes
+  useEffect(() => {
+    clearInputFields();
+  }, [selectedTab]);
+
+  //Clearing the input fields when screen changes
+  useFocusEffect(
+    useCallback(() => {
+      clearInputFields();
+
+      return () => {
+        console.log("Input Field Cleared👌👌");
+      };
+    }, [])
+  );
+
   const handleSignUp = async () => {
-    if (!fullName || !userName || !signUpEmail || !signUpPassword) {
-      Alert.alert("Validation Error", "All fields are required.");
-      return;
-    }
+    setSignUpLoading(true);
     try {
       const formData = new FormData();
 
@@ -126,14 +157,18 @@ const Profile = () => {
         }
       );
       const data = response?.data;
-      console.log("User Data :", data);
+      console.log("Registered User Data :", data);
     } catch (error) {
       console.error("SignUp failed:", error.response?.data || error.message);
       Alert.alert("SignUp Error", "Something went wrong. Please try again.");
+    } finally {
+      setSignUpLoading(false);
     }
   };
 
   const login = async () => {
+    setLogInLoading(true);
+    setLoggingError(null)
     try {
       const response = await axios.post(`${BASE_URL}api/v1/users/login`, {
         email: email,
@@ -148,13 +183,14 @@ const Profile = () => {
             token: data?.data?.accessToken,
           })
         );
+        clearInputFields();
         navigation.navigate("Home");
-      } else {
-        Alert("Please give correct credentials");
       }
     } catch (error) {
       console.error("Login failed:", error.response?.data || error.message);
-      Alert.alert("Login Error", "Something went wrong. Please try again.");
+      setLoggingError("Wrong Credentials");
+    } finally {
+      setLogInLoading(false);
     }
   };
 
@@ -252,7 +288,22 @@ const Profile = () => {
                     value={Password}
                     onChangeText={setPassword}
                   />
-                  <Button title={"Login"} onPress={login} />
+                  {loggingError && (
+                    <Text style={styles.error}>{loggingError}</Text>
+                  )}
+                  <Button
+                    title={
+                      logInLoading ? (
+                        <View>
+                          <ActivityIndicator size={24} />
+                        </View>
+                      ) : (
+                        "Login"
+                      )
+                    }
+                    onPress={login}
+                  />
+
                   <TouchableOpacity style={styles.forgotTxt}>
                     <Text style={{ color: "black" }}>Forgotten Password?</Text>
                   </TouchableOpacity>
@@ -297,7 +348,18 @@ const Profile = () => {
                     value={userName}
                     onChangeText={setUserName}
                   />
-                  <Button title={"SignUp"} onPress={handleSignUp} />
+                  <Button
+                    title={
+                      signUpLoading ? (
+                        <View>
+                          <ActivityIndicator size={24} />
+                        </View>
+                      ) : (
+                        "SignUp"
+                      )
+                    }
+                    onPress={handleSignUp}
+                  />
                 </View>
               )}
             </View>
@@ -434,5 +496,12 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "#ddd",
     marginVertical: 1,
+  },
+  error: {
+    color: "red",
+    fontSize: 14,
+    marginTop: 5,
+    marginBottom: 10,
+    textAlign: "center",
   },
 });

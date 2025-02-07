@@ -15,17 +15,25 @@ import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import Button from "../components/Button";
 import { Ionicons } from "@expo/vector-icons";
+import Header from "../components/Header";
 
 const Module = () => {
-  const isUserLoggedIn = useSelector((state) => state.userAuth || {});
-  const accessToken = isUserLoggedIn.token || null;
-  const [blogListData, setBlogListData] = useState([]);
   const navigation = useNavigation();
+  const auth = useSelector((state) => state.userAuth || {});
+
+  const isAuthenticated = auth.isAuthenticated || false;
+  const userData = auth.user || null;
+  const accessToken = auth.token || null;
+
+  const [blogListData, setBlogListData] = useState([]);
   const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     fetchMyBlogList();
   }, [navigation]);
+
   console.log(blogListData);
+
   const fetchMyBlogList = async () => {
     try {
       const response = await axios.get(
@@ -44,11 +52,12 @@ const Module = () => {
       throw error;
     }
   };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-      {accessToken ? (
+      {isAuthenticated ? (
         <View style={{ flex: 1 }}>
-          <View
+          {/* <View
             style={{
               paddingHorizontal: 12,
               flexDirection: "row",
@@ -58,8 +67,26 @@ const Module = () => {
             <View style={{ flex: 1 }}>
               <SearchComponent />
             </View>
-            <Ionicons name={"bookmark"} size={28} color="tomato" onPress={()=>navigation.navigate("bookmarked")}/>
-          </View>
+            <Ionicons
+              name={"bookmark"}
+              size={28}
+              color="tomato"
+              onPress={() => navigation.navigate("bookmarked")}
+            />
+          </View> */}
+          <Header
+            showSearchComponent={true}
+            showRightIcon={true}
+            rtIcon={
+              <Ionicons
+                name={"bookmark"}
+                size={28}
+                color="tomato"
+                onPress={() => navigation.navigate("bookmarked")}
+              />
+            }
+            onRtIconPress={() => navigation.navigate("bookmarked")}
+          />
           <View style={{ flex: 1 }}>
             <FlatList
               data={blogListData}
@@ -71,7 +98,7 @@ const Module = () => {
                   onPress={() =>
                     navigation.navigate("blogDetails", { blogId: item?._id })
                   }
-                  isUserLoggedIn={isUserLoggedIn?.user}
+                  isUserLoggedIn={userData}
                   item={item}
                 />
               )}

@@ -1,5 +1,12 @@
-import { StyleSheet, Text, TextInput, View } from "react-native";
-import React from "react";
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import React, { useState } from "react";
+import { FontAwesome } from "@expo/vector-icons";
 
 const InputField = ({
   label,
@@ -9,17 +16,37 @@ const InputField = ({
   secureTextEntry = false,
   errorMessage,
 }) => {
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
+  };
+
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
-      <TextInput
-        style={[styles.input, errorMessage ? styles.inputError : null]}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor="#888"
-        secureTextEntry={secureTextEntry}
-      />
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={[styles.input, errorMessage ? styles.inputError : null]}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor="#888"
+          secureTextEntry={secureTextEntry && !isPasswordVisible}
+        />
+        {secureTextEntry && (
+          <TouchableOpacity
+            style={styles.eyeIconContainer}
+            onPress={togglePasswordVisibility}
+          >
+            <FontAwesome
+              name={isPasswordVisible ? "eye" : "eye-slash"}
+              size={20}
+              color="gray"
+            />
+          </TouchableOpacity>
+        )}
+      </View>
       {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
     </View>
   );
@@ -31,14 +58,20 @@ const styles = StyleSheet.create({
   container: {
     marginVertical: 10,
     marginHorizontal: 25,
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
   },
   label: {
     fontSize: 16,
     marginBottom: 5,
     color: "#333",
   },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    position: "relative",
+  },
   input: {
+    flex: 1,
     height: 50,
     borderWidth: 1,
     borderColor: "#EAEAEA",
@@ -52,6 +85,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+    paddingRight: 40,
   },
   inputError: {
     borderColor: "red",
@@ -60,5 +94,11 @@ const styles = StyleSheet.create({
     color: "red",
     fontSize: 12,
     marginTop: 5,
+  },
+  eyeIconContainer: {
+    position: "absolute",
+    right: 10,
+    top: "50%",
+    marginTop: -10,
   },
 });
