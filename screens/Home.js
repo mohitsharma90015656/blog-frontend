@@ -1,7 +1,6 @@
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   ImageBackground,
   SafeAreaView,
   ScrollView,
@@ -21,6 +20,8 @@ import { BASE_URL } from "../constants/Config";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSelector } from "react-redux";
+import Header from "../components/Header";
+import { FontAwesome } from "@expo/vector-icons";
 const Home = () => {
   const categories = [
     "All",
@@ -46,7 +47,6 @@ const Home = () => {
       return () => {};
     }, [])
   );
-
   const fetchReportList = async () => {
     try {
       const response = await axios.get(`${BASE_URL}api/v1/blog/blogList`);
@@ -61,34 +61,13 @@ const Home = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.userNameContainer}>
-        {userData?.avatar ? (
-          <Image
-            source={{
-              uri: userData?.avatar,
-            }}
-            style={{ height: 30, width: 30, borderRadius: 50 }}
-          />
-        ) : (
-          <EvilIcons name="user" size={40} color="black" />
-        )}
-
-      <View><Text style={{fontSize: 16,fontWeight: 500}}>Mohit sharma</Text></View>
-        <View
-          style={{
-            borderWidth: 0.5,
-            borderColor: "lightgray",
-            padding: 4,
-            borderRadius: 50,
-          }}
-        >
-          <FontAwesome name="bell-o" size={20} color="black" />
-        </View>
-      </View>
-      <View style={{paddingHorizontal: 12 }}>
-          <SearchComponent />
-      
-        </View>
+      <Header
+        showProfile={true}
+        showSearchComponent={true}
+        showRightIcon={true}
+        rtIcon={<FontAwesome name="bell-o" size={24} color="black" />}
+        profileIconClr={"black"}
+      />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <ImageBackground
@@ -177,13 +156,6 @@ const Home = () => {
 export default Home;
 
 const styles = StyleSheet.create({
-  userNameContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingTop: 25,
-    justifyContent: "space-between",
-  },
   container: { backgroundColor: "white", flex: 1 },
   card: {
     borderRadius: 12,
@@ -195,22 +167,6 @@ const styles = StyleSheet.create({
     elevation: 5,
     margin: 12,
     marginTop: 0,
-  },
-  trendingBadge: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-  },
-  trendingText: {
-    color: "#fff",
-    fontSize: 12,
-    marginLeft: 4,
-    fontWeight: "bold",
   },
   image: {
     flex: 1,
