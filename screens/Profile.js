@@ -180,7 +180,7 @@ const Profile = () => {
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === "ios" ? "padding" : null}
         style={{ flex: 1 }}
         keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
       >
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
     borderRadius: 15,
     alignItems: "center",
-    elevation: 5, // Adds shadow effect for Android
+    elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
