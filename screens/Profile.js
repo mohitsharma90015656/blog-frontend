@@ -62,7 +62,6 @@ const Profile = () => {
   const closeModal = () => setModalVisible(!modalVisible);
 
   const takeSelfie = async () => {
-    closeModal();
     let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
@@ -72,6 +71,7 @@ const Profile = () => {
 
     if (!result.canceled) {
       setProfileImage(result.assets[0].uri);
+      closeModal();
     }
   };
 
@@ -85,6 +85,7 @@ const Profile = () => {
 
     if (!result.canceled) {
       setProfileImage(result.assets[0].uri);
+      closeModal();
     }
   };
   console.log("image result : ", profileImage);
