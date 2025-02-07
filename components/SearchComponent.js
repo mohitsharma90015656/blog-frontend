@@ -23,7 +23,7 @@ const SearchComponent = ({
         style={[
           styles.searchBarInnerContainer,
           {
-            paddingHorizontal: Platform.OS == "ios"? 8 : 0,
+            paddingVertical: Platform.OS == "ios"? 8 : 0,
           },
         ]}
       >

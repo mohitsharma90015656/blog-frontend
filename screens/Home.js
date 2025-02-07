@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import SearchComponent from "../components/SearchComponent";
-import { EvilIcons, FontAwesome, Ionicons } from "@expo/vector-icons";
+import { EvilIcons, FontAwesome,  } from "@expo/vector-icons";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import NewsCard from "../components/NewsCard";
@@ -21,7 +21,6 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSelector } from "react-redux";
 import Header from "../components/Header";
-import { FontAwesome } from "@expo/vector-icons";
 const Home = () => {
   const categories = [
     "All",
