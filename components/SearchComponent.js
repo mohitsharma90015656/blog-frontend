@@ -61,11 +61,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     backgroundColor: "#f3f1f1",
     borderRadius: 16,
-    paddingVertical: 10,
-    marginVertical: 12,
+    paddingVertical: 4,
     paddingRight: 12,
+    paddingLeft: 12,
     marginHorizontal: 12,
-    marginLeft: 2
+    marginLeft: 12,
+    marginRight: 12,
+    marginTop: 12,
+    marginBottom: 15
   },
   searchBarInnerContainer: {
     flex: 1,

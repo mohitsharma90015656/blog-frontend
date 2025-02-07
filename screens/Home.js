@@ -1,7 +1,6 @@
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   ImageBackground,
   SafeAreaView,
   ScrollView,
@@ -11,15 +10,13 @@ import {
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import SearchComponent from "../components/SearchComponent";
-import { EvilIcons, FontAwesome } from "@expo/vector-icons";
-import LinearGradient from "react-native-linear-gradient";
-import Icon from "react-native-vector-icons/MaterialIcons";
 import NewsCard from "../components/NewsCard";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { BASE_URL } from "../constants/Config";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Header from "../components/Header";
+import { FontAwesome } from "@expo/vector-icons";
 const Home = () => {
   const categories = [
     "All",
@@ -36,7 +33,7 @@ const Home = () => {
   const [isUserLoggedIn, setIsUserLoggedIn] = useState("");
   useFocusEffect(
     React.useCallback(() => {
-      setIsUserLoggedIn("")
+      setIsUserLoggedIn("");
       getUserData();
       if (selectedCategory === "My blogs") {
         setBlogListData([]);
@@ -50,11 +47,11 @@ const Home = () => {
       return () => {};
     }, [selectedCategory])
   );
-  
+
   const getUserData = async () => {
     try {
       const userData = await AsyncStorage.getItem("userData");
-      await AsyncStorage.removeItem()
+      await AsyncStorage.removeItem();
       if (userData != null) {
         const parsedUserData = JSON.parse(userData);
         setIsUserLoggedIn(parsedUserData?.data);
@@ -69,10 +66,11 @@ const Home = () => {
   };
 
   const fetchMyBlogList = async () => {
-    const accessToken = isUserLoggedIn.accessToken
+    const accessToken = isUserLoggedIn.accessToken;
     try {
       const response = await axios.get(
-        `${BASE_URL}api/v1/blog/blogUserWiseList`,{
+        `${BASE_URL}api/v1/blog/blogUserWiseList`,
+        {
           headers: {
             Authorization: `Bearer ${accessToken}`, // Set token in Authorization header
           },
@@ -86,7 +84,7 @@ const Home = () => {
       throw error;
     }
   };
-  
+
   const fetchReportList = async () => {
     try {
       const response = await axios.get(`${BASE_URL}api/v1/blog/blogList`);
@@ -101,32 +99,13 @@ const Home = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.userNameContainer}>
-        {isUserLoggedIn?.user?.avatar ? (
-          <Image
-            source={{
-              uri: isUserLoggedIn?.user?.avatar,
-            }}
-            style={{ height: 36, width: 36, borderRadius: 50 }}
-          />
-        ) : (
-          <EvilIcons name="user" size={46} color="black" />
-        )}
-
-        <View style={{ flex: 1, }}>
-          <SearchComponent />
-        </View>
-        <View
-          style={{
-            borderWidth: 0.5,
-            borderColor: "lightgray",
-            padding: 6,
-            borderRadius: 50,
-          }}
-        >
-          <FontAwesome name="bell-o" size={24} color="black" />
-        </View>
-      </View>
+      <Header
+        showProfile={true}
+        showSearchComponent={true}
+        showRightIcon={true}
+        rtIcon={<FontAwesome name="bell-o" size={24} color="black" />}
+        profileIconClr={"black"}
+      />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <ImageBackground
@@ -209,13 +188,6 @@ const Home = () => {
 export default Home;
 
 const styles = StyleSheet.create({
-  userNameContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingTop: 25,
-    justifyContent: "space-between",
-  },
   container: { backgroundColor: "white", flex: 1 },
   card: {
     borderRadius: 12,
@@ -227,22 +199,6 @@ const styles = StyleSheet.create({
     elevation: 5,
     margin: 12,
     marginTop: 0,
-  },
-  trendingBadge: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-  },
-  trendingText: {
-    color: "#fff",
-    fontSize: 12,
-    marginLeft: 4,
-    fontWeight: "bold",
   },
   image: {
     flex: 1,
