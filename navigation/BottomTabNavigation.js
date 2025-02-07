@@ -43,7 +43,7 @@ const BottomTabNavigation = () => {
         }}
       />
       <Tab.Screen
-        name="Saved"
+        name="My Blogs"
         component={Module}
         options={{
           tabBarIcon: ({ focused, color }) => {

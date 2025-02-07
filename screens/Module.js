@@ -1,14 +1,17 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import React from "react";
+import SearchComponent from "../components/SearchComponent";
 
 const Module = () => {
   return (
-    <View>
-      <Text>Module</Text>
-    </View>
-  )
-}
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <View style={{ flex: 1, paddingHorizontal: 12 }}>
+        <SearchComponent />
+      </View>
+    </SafeAreaView>
+  );
+};
 
-export default Module
+export default Module;
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({});
