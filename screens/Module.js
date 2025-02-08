@@ -80,7 +80,7 @@ const Module = () => {
             rtIcon={
               <Ionicons
                 name={"bookmark"}
-                size={28}
+                size={24}
                 color="tomato"
                 onPress={() => navigation.navigate("bookmarked")}
               />

@@ -44,7 +44,6 @@ const Profile = () => {
   const [loggingError, setLoggingError] = useState(null);
   const [signUpLoading, setSignUpLoading] = useState(false);
 
-
   //Login State
   const [email, setEmail] = useState("");
   const [Password, setPassword] = useState("");
@@ -94,8 +93,6 @@ const Profile = () => {
     if (result.canceled) return;
   };
   console.log("image result : ", profileImage);
-
-  
 
   const handleTabPress = (tab, index) => {
     setSelectedTab(tab);
@@ -168,7 +165,7 @@ const Profile = () => {
 
   const login = async () => {
     setLogInLoading(true);
-    setLoggingError(null)
+    setLoggingError(null);
     try {
       const response = await axios.post(`${BASE_URL}api/v1/users/login`, {
         email: email,
@@ -215,28 +212,29 @@ const Profile = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : null}
-        style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
-      >
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
+      {isAuthenticated ? (
+        <>
+          <Header
+            showSearchComponent={true}
+            showRightIcon={true}
+            rtIcon={<FontAwesome name="bell-o" size={24} color="black" />}
+          />
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View>
+              <OutlineBtn title={"Logout"} onPress={handleLogOut} />
+            </View>
+          </ScrollView>
+        </>
+      ) : (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : null}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
         >
-          {isAuthenticated ? (
-            <>
-              <Header
-                goBack={true}
-                showSearchComponent={true}
-                showRightIcon={true}
-                rtIcon={<FontAwesome name="bell-o" size={24} color="white" />}
-              />
-              <View>
-                <OutlineBtn title={"Logout"} onPress={handleLogOut} />
-              </View>
-            </>
-          ) : (
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+          >
             <View style={styles.authContainer}>
               <Image
                 source={require("../assets/logo.png")}
@@ -363,9 +361,10 @@ const Profile = () => {
                 </View>
               )}
             </View>
-          )}
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      )}
+
       <Portal>
         <Modal
           visible={modalVisible}
