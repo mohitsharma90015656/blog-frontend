@@ -11,7 +11,7 @@ import SearchComponent from "../components/SearchComponent";
 import { BASE_URL } from "../constants/Config";
 import { useSelector } from "react-redux";
 import NewsCard from "../components/NewsCard";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import Button from "../components/Button";
 import { Ionicons } from "@expo/vector-icons";
@@ -28,11 +28,14 @@ const Module = () => {
   const [blogListData, setBlogListData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchMyBlogList();
-  }, [navigation]);
-
-  console.log(blogListData);
+  useFocusEffect(
+    React.useCallback(() => {
+      setBlogListData([]);
+      setLoading(true);
+      fetchMyBlogList();
+      return () => {};
+    }, [])
+  );
 
   const fetchMyBlogList = async () => {
     try {
@@ -57,23 +60,6 @@ const Module = () => {
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       {isAuthenticated ? (
         <View style={{ flex: 1 }}>
-          {/* <View
-            style={{
-              paddingHorizontal: 12,
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <View style={{ flex: 1 }}>
-              <SearchComponent />
-            </View>
-            <Ionicons
-              name={"bookmark"}
-              size={28}
-              color="tomato"
-              onPress={() => navigation.navigate("bookmarked")}
-            />
-          </View> */}
           <Header
             showSearchComponent={true}
             showRightIcon={true}
@@ -98,7 +84,7 @@ const Module = () => {
                   onPress={() =>
                     navigation.navigate("blogDetails", { blogId: item?._id })
                   }
-                  isUserLoggedIn={userData}
+                  isUserLoggedIn={false}
                   item={item}
                 />
               )}
@@ -106,7 +92,7 @@ const Module = () => {
                 <>
                   {loading ? (
                     <View style={{ padding: 16 }}>
-                      <ActivityIndicator size={"large"} />{" "}
+                      <ActivityIndicator size={"large"} />
                     </View>
                   ) : null}
                 </>

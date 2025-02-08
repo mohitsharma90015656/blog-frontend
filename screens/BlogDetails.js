@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Image,
   SafeAreaView,
   ScrollView,
@@ -16,13 +17,19 @@ import {
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { BASE_URL, BLOG_DEFAULT_IMAGE } from "../constants/Config";
 import axios from "axios";
+import { useSelector } from "react-redux";
 
 const BlogDetails = (props) => {
   const navigation = useNavigation();
   const [blogDetails, setBlogDetails] = useState([]);
   const [likes, setLikes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const auth = useSelector((state) => state.userAuth || {});
+  const isAuthenticated = auth.isAuthenticated || false;
+
   useFocusEffect(
     React.useCallback(() => {
+      setLoading(true);
       fetchBlogDetails(props?.route.params.blogId);
       return () => {};
     }, [])
@@ -32,8 +39,10 @@ const BlogDetails = (props) => {
       const response = await axios.get(
         `${BASE_URL}api/v1/blog/blogDetails/${id}`
       );
+      setLoading(false);
       setBlogDetails(response?.data?.data);
     } catch (error) {
+      setLoading(false);
       console.error(
         "Error fetching blog details:",
         error.response?.data || error
@@ -65,14 +74,21 @@ const BlogDetails = (props) => {
             onPress={() => navigation.goBack()}
           />
 
-          <AntDesign
-            name="hearto"
-            size={26}
-            color="black"
-            onPress={() => handleLike(props?.route.params.blogId)}
-          />
+          {isAuthenticated && (
+            <AntDesign
+              name="hearto"
+              size={26}
+              color="black"
+              onPress={() => handleLike(props?.route.params.blogId)}
+            />
+          )}
         </View>
         <ScrollView>
+          {loading ? (
+            <View style={{ padding: 16 }}>
+              <ActivityIndicator size={"large"} />
+            </View>
+          ) : null}
           <View style={{ flex: 1 }}>
             <Image
               source={{
@@ -104,10 +120,14 @@ const BlogDetails = (props) => {
                   </Text>
                 )}
               </View>
-              {blogDetails?.owner?.fullName && (
-                <View style={styles.followButton}>
-                  <Text style={{ color: "white" }}>Follow</Text>
-                </View>
+              {isAuthenticated && (
+                <>
+                  {blogDetails?.owner?.fullName && (
+                    <View style={styles.followButton}>
+                      <Text style={{ color: "white" }}>Follow</Text>
+                    </View>
+                  )}
+                </>
               )}
             </View>
             <View style={{ gap: 12, paddingTop: 16 }}>
