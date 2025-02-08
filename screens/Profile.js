@@ -215,7 +215,8 @@ const Profile = () => {
       {isAuthenticated ? (
         <>
           <Header
-            showSearchComponent={true}
+            // showSearchComponent={true}
+            title={"My"}
             showRightIcon={true}
             rtIcon={<FontAwesome name="bell-o" size={24} color="black" />}
           />
