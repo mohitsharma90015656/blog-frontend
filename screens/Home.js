@@ -10,15 +10,11 @@ import {
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import SearchComponent from "../components/SearchComponent";
-import { EvilIcons, FontAwesome,  } from "@expo/vector-icons";
-import LinearGradient from "react-native-linear-gradient";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { EvilIcons, FontAwesome } from "@expo/vector-icons";
 import NewsCard from "../components/NewsCard";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { BASE_URL } from "../constants/Config";
 import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSelector } from "react-redux";
 import Header from "../components/Header";
 const Home = () => {
@@ -35,12 +31,12 @@ const Home = () => {
   const [blogListData, setBlogListData] = useState([]);
   const [loading, setLoading] = useState(false);
   const isUserLoggedIn = useSelector((state) => state.userAuth || {});
-
+  const [bookmarkedBlog, setBookmarkedBlog] = useState(false);
   const accessToken = isUserLoggedIn.token || null;
   const userData = isUserLoggedIn.user || null;
+
   useFocusEffect(
     React.useCallback(() => {
-      setBlogListData([]);
       setLoading(true);
       fetchReportList();
       return () => {};
@@ -58,6 +54,19 @@ const Home = () => {
     }
   };
 
+  const bookmarkBlog = async (id) => {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}api/v1/bookmark/bookmark/${id}`
+      );
+      fetchReportList();
+    } catch (error) {
+      setLoading(false);
+      console.error("Error while bookmark blog:", error);
+      throw error;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Header
@@ -67,23 +76,36 @@ const Home = () => {
         rtIcon={<FontAwesome name="bell-o" size={24} color="black" />}
         profileIconClr={"black"}
       />
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.card}>
-          <ImageBackground
-            source={{
-              uri: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Image_created_with_a_mobile_phone.png",
-            }}
-            style={styles.image}
-            imageStyle={{ borderRadius: 12 }}
-          >
-            <View style={styles.details}>
-              <Text style={styles.author}>Esther Howard • Fashion</Text>
-              <Text style={styles.title}>
-                Fashion Icon's New Collection{"\n"}Embraces Nature Elegance
-              </Text>
+      <View style={{}}>
+        <FlatList
+          data={[1, 2, 3, 4, 5]}
+          nestedScrollEnabled={true}
+          showsVerticalScrollIndicator={false}
+          horizontal
+          contentContainerStyle={{ paddingHorizontal: 12 }}
+          keyExtractor={(item, index) => index}
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <View style={[styles.card, { flex: 1 }]}>
+              <ImageBackground
+                source={{
+                  uri: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Image_created_with_a_mobile_phone.png",
+                }}
+                style={styles.image}
+                imageStyle={{ borderRadius: 12 }}
+              >
+                <View style={styles.details}>
+                  <Text style={styles.author}>Esther Howard • Fashion</Text>
+                  <Text style={styles.title}>
+                    Fashion Icon's New Collection{"\n"}Embraces Nature Elegance
+                  </Text>
+                </View>
+              </ImageBackground>
             </View>
-          </ImageBackground>
-        </View>
+          )}
+        />
+      </View>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <View style={{}}>
           <Text
             style={{
@@ -132,17 +154,21 @@ const Home = () => {
                 onPress={() =>
                   navigation.navigate("blogDetails", { blogId: item?._id })
                 }
-                isUserLoggedIn={isUserLoggedIn}
+                isUserLoggedIn={accessToken}
                 item={item}
+                bookmarkedBlog={bookmarkedBlog}
+                onPressBookmarked={() => bookmarkBlog(item?._id)}
               />
             )}
             ListHeaderComponent={
               <>
-                {loading ? (
-                  <View style={{ padding: 16 }}>
-                    <ActivityIndicator size={"large"} />
-                  </View>
-                ) : null}
+                <>
+                  {loading ? (
+                    <View style={{ padding: 16 }}>
+                      <ActivityIndicator size={"large"} />
+                    </View>
+                  ) : null}
+                </>
               </>
             }
           />
@@ -157,6 +183,7 @@ export default Home;
 const styles = StyleSheet.create({
   container: { backgroundColor: "white", flex: 1 },
   card: {
+    width: "100%",
     borderRadius: 12,
     overflow: "hidden",
     backgroundColor: "#fff",
@@ -164,18 +191,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 5,
-    margin: 12,
-    marginTop: 0,
+    paddingRight: 12,
+    marginBottom: 12,
   },
   image: {
-    flex: 1,
     width: "100%",
-    height: 200,
+    height: 180,
   },
   details: {
+    flex: 1,
     padding: 12,
     bottom: 0,
-    position: "absolute",
+    justifyContent: "flex-end",
   },
   author: {
     fontSize: 14,

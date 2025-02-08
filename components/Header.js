@@ -1,4 +1,11 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import React from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import SearchComponent from "./SearchComponent";
@@ -60,7 +67,14 @@ const Header = ({
         {showSearchComponent ? (
           <SearchComponent />
         ) : (
-          <Text style={[{color: titleColor ? titleColor : "white"},styles.headerTitle]}>{title}</Text>
+          <Text
+            style={[
+              { color: titleColor ? titleColor : "white" },
+              styles.headerTitle,
+            ]}
+          >
+            {title}
+          </Text>
         )}
       </View>
 
@@ -79,8 +93,8 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 15,
-    paddingTop: 30,
+    padding: 12,
+    paddingTop: Platform.OS == "ios" ? 0 : 30,
     top: 0,
     left: 0,
     right: 0,

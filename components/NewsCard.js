@@ -3,9 +3,8 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import moment from "moment";
 import { BLOG_DEFAULT_IMAGE } from "../constants/Config";
-const NewsCard = ({ onPress, item ,isUserLoggedIn}) => {
-
-
+import { Fontisto } from "@expo/vector-icons";
+const NewsCard = ({ onPress, item, isUserLoggedIn, onPressBookmarked }) => {
   return (
     <TouchableOpacity onPress={onPress}>
       <View style={styles.card}>
@@ -29,9 +28,15 @@ const NewsCard = ({ onPress, item ,isUserLoggedIn}) => {
             {item?.likeBy?.length} Likes • {item?.commentedBy?.length} Comment
           </Text>
         </View>
-        {isUserLoggedIn && <TouchableOpacity>
-          <Icon name="bookmark" size={20} color="#666" />
-        </TouchableOpacity>}
+        {isUserLoggedIn && (
+          <TouchableOpacity onPress={onPressBookmarked} style={{padding: 8}}>
+            <Fontisto
+              name={item?.isBookmarked ? "bookmark-alt" : "bookmark"}
+              size={20}
+              color="black"
+            />
+          </TouchableOpacity>
+        )}
       </View>
     </TouchableOpacity>
   );
