@@ -22,12 +22,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginHorizontal: 25,
     marginVertical: 20,
-    borderColor: COLORS.white,
+    borderColor: "#445045",
     borderWidth: 1
   },
   btnTxt: {
     fontSize: 16,
     fontWeight: 700,
-    color: COLORS.white,
+    color: "#445045",
   },
 });
