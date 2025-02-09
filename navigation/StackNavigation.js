@@ -4,6 +4,7 @@ import React from "react";
 import BottomTabNavigation from "./BottomTabNavigation";
 import BlogDetails from "../screens/BlogDetails";
 import Bookmarked from "../screens/Bookmarked";
+import CreateBlog from "../screens/CreateBlog";
 const StackNavigation = () => {
   const Stack = createNativeStackNavigator();
   return (
@@ -22,6 +23,11 @@ const StackNavigation = () => {
         <Stack.Screen
           name="bookmarked"
           component={Bookmarked}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="createBlog"
+          component={CreateBlog}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

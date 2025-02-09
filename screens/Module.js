@@ -16,13 +16,13 @@ import axios from "axios";
 import Button from "../components/Button";
 import { Ionicons } from "@expo/vector-icons";
 import Header from "../components/Header";
+import { FAB } from "react-native-paper";
 
 const Module = () => {
   const navigation = useNavigation();
   const auth = useSelector((state) => state.userAuth || {});
 
   const isAuthenticated = auth.isAuthenticated || false;
-  const userData = auth.user || null;
   const accessToken = auth.token || null;
 
   const [blogListData, setBlogListData] = useState([]);
@@ -30,9 +30,12 @@ const Module = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      setBlogListData([]);
-      setLoading(true);
-      fetchMyBlogList();
+      if (accessToken) {
+        setBlogListData([]);
+        setLoading(true);
+        fetchMyBlogList();
+      }
+
       return () => {};
     }, [])
   );
@@ -73,7 +76,7 @@ const Module = () => {
             }
             onRtIconPress={() => navigation.navigate("bookmarked")}
           />
-          <View style={{ flex: 1 }}>
+          <View style={{ }}>
             <FlatList
               data={blogListData}
               nestedScrollEnabled={true}
@@ -113,10 +116,29 @@ const Module = () => {
           />
         </View>
       )}
+      <FAB
+        icon="plus"
+        style={styles.fab}
+        onPress={() => navigation.navigate("createBlog")}
+        color="white"
+      />
     </SafeAreaView>
   );
 };
 
 export default Module;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  fab: {
+    position: "absolute",
+    margin: 16,
+    right: 10,
+    bottom: 10,
+    backgroundColor: "black",
+    color: "white",
+    height: 50,
+    width: 50,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
