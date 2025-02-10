@@ -1,6 +1,7 @@
 import {
   ActivityIndicator,
   Alert,
+  FlatList,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -27,9 +28,13 @@ import Header from "../components/Header";
 import { FontAwesome } from "@expo/vector-icons";
 import Animated, { useSharedValue, withTiming } from "react-native-reanimated";
 import * as ImagePicker from "expo-image-picker";
-import { Modal, Portal } from "react-native-paper";
+import { Modal, Portal, SegmentedButtons } from "react-native-paper";
+import NewsCard from "../components/NewsCard";
 
 const Profile = () => {
+  const categories = ["Posts", "Liked", "Latest"];
+  const [selectedCategory, setSelectedCategory] = useState("Posts");
+
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const translateX = useSharedValue(0);
@@ -39,6 +44,9 @@ const Profile = () => {
   const userData = auth.user || null;
   const accessToken = auth.token || null;
 
+  const [loading, setLoading] = useState(false);
+  const [bookmarkedBlog, setBookmarkedBlog] = useState(false);
+  const [blogListData, setBlogListData] = useState([]);
   const [selectedTab, setSelectedTab] = useState("Login");
   const [logInLoading, setLogInLoading] = useState(false);
   const [loggingError, setLoggingError] = useState(null);
@@ -92,7 +100,6 @@ const Profile = () => {
 
     if (result.canceled) return;
   };
-  console.log("image result : ", profileImage);
 
   const handleTabPress = (tab, index) => {
     setSelectedTab(tab);
@@ -119,10 +126,7 @@ const Profile = () => {
   useFocusEffect(
     useCallback(() => {
       clearInputFields();
-
-      return () => {
-        console.log("Input Field Cleared👌👌");
-      };
+      return () => {};
     }, [])
   );
 
@@ -154,7 +158,6 @@ const Profile = () => {
         }
       );
       const data = response?.data;
-      console.log("Registered User Data :", data);
     } catch (error) {
       console.error("SignUp failed:", error.response?.data || error.message);
       Alert.alert("SignUp Error", "Something went wrong. Please try again.");
@@ -199,7 +202,6 @@ const Profile = () => {
         },
       });
       const data = response?.data;
-      console.log("userData: ", data);
 
       if (data?.success) {
         dispatch(logoutAction());
@@ -210,21 +212,169 @@ const Profile = () => {
     }
   };
 
+  useFocusEffect(
+    React.useCallback(() => {
+      setLoading(true);
+      fetchReportList();
+      return () => {};
+    }, [])
+  );
+
+  const fetchReportList = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}api/v1/blog/blogUserWiseList`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      setLoading(false);
+      setBlogListData(response?.data?.data);
+    } catch (error) {
+      setLoading(false);
+      console.error("Error fetching report list:", error);
+      throw error;
+    }
+  };
+
+  const bookmarkBlog = async (id) => {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}api/v1/bookmark/bookmark/${id}`
+      );
+      fetchReportList();
+    } catch (error) {
+      setLoading(false);
+      console.error("Error while bookmark blog:", error);
+      throw error;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {isAuthenticated ? (
         <>
           <Header
-            // showSearchComponent={true}
-            title={"My"}
+            title={`@${userData?.username}`}
+            titleColor={"black"}
             showRightIcon={true}
-            rtIcon={<FontAwesome name="bell-o" size={24} color="black" />}
+            rtIcon={<FontAwesome name="gear" size={24} color="black" />}
           />
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View>
-              <OutlineBtn title={"Logout"} onPress={handleLogOut} />
+
+          <View style={styles.profileHeader}>
+            <Image
+              source={{
+                uri: "https://images.unsplash.com/photo-1528465424850-54d22f092f9d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+              }}
+              style={styles.bgImage}
+            />
+            <View style={styles.profileInfo}>
+              {userData?.avatar ? (
+                <Image
+                  style={styles.profileImg}
+                  source={{ uri: userData?.avatar }}
+                />
+              ) : (
+                <Image
+                  style={styles.profileImg}
+                  source={{
+                    uri: "https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/no-profile-picture-icon.png",
+                  }}
+                />
+              )}
+
+              <Text style={styles.username}>{userData?.fullName}</Text>
+              <Text style={styles.designation}>{`@${userData?.username}`}</Text>
             </View>
-          </ScrollView>
+            <View style={styles.activities}>
+              <TouchableOpacity style={styles.activity}>
+                <Text style={styles.number}>1,250</Text>
+                <Text style={styles.text}>Posts</Text>
+              </TouchableOpacity>
+              <View style={styles.verticalDivider} />
+              <TouchableOpacity style={styles.activity}>
+                <Text style={styles.number}>
+                  {userData.followedBy ? userData.followedBy.length : 0}
+                </Text>
+                <Text style={styles.text}>Followers</Text>
+              </TouchableOpacity>
+              <View style={styles.verticalDivider} />
+              <TouchableOpacity style={styles.activity}>
+                <Text style={styles.number}>
+                  {userData.following ? userData.following.length : 0}
+                </Text>
+                <Text style={styles.text}>Following</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View
+            style={{
+              paddingHorizontal: 12,
+              paddingTop: 16,
+              paddingBottom: 16,
+              justifyContent: "space-around",
+            }}
+          >
+            <FlatList
+              data={categories}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.categoryItem,
+                    selectedCategory === item && styles.activeCategory,
+                  ]}
+                  onPress={() => setSelectedCategory(item)}
+                >
+                  <Text
+                    style={[
+                      styles.categoryText,
+                      selectedCategory === item && styles.activeText,
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+
+          <FlatList
+            data={blogListData}
+            nestedScrollEnabled={true}
+            showsVerticalScrollIndicator={false}
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingTop: 8 }}
+            keyExtractor={(item, index) => index}
+            renderItem={({ item }) => (
+              <NewsCard
+                onPress={() =>
+                  navigation.navigate("blogDetails", {
+                    blogId: item?._id,
+                  })
+                }
+                isUserLoggedIn={accessToken}
+                item={item}
+                bookmarkedBlog={bookmarkedBlog}
+                onPressBookmarked={() => bookmarkBlog(item?._id)}
+              />
+            )}
+            ListHeaderComponent={
+              <>
+                <>
+                  {loading ? (
+                    <View style={{ padding: 16 }}>
+                      <ActivityIndicator size={"large"} />
+                    </View>
+                  ) : null}
+                </>
+              </>
+            }
+          />
         </>
       ) : (
         <KeyboardAvoidingView
@@ -503,5 +653,87 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 10,
     textAlign: "center",
+  },
+  profileHeader: {
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+  profileInfo: {
+    alignItems: "center",
+    marginTop: -20,
+  },
+  bgImage: {
+    height: 180,
+    width: "100%",
+    objectFit: 'fill',
+    opacity: 0.7
+  },
+  profileImg: {
+    height: 130,
+    width: 130,
+    borderRadius: 80,
+    marginTop: -60,
+    borderWidth: 3,
+    borderColor: "#fff",
+  },
+  username: {
+    color: "#000",
+    marginTop: 10,
+    fontSize: 20,
+  },
+  designation: {
+    alignItems: "center",
+    color: "#000",
+    marginTop: 5,
+  },
+  activities: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginHorizontal: 12,
+    marginTop: 20,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    elevation: 5,
+    borderRadius: 10,
+    paddingVertical: 20,
+  },
+  activity: {
+    alignItems: "center",
+    flex: 1,
+  },
+  number: {
+    fontSize: 22,
+    fontWeight: "bold",
+  },
+  text: {
+    fontSize: 15,
+    marginTop: 5,
+    color: "gray",
+  },
+  verticalDivider: {
+    width: 1,
+    backgroundColor: "#ddd",
+  },
+  categoryItem: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    marginHorizontal: 5,
+    backgroundColor: "#fff",
+  },
+  activeCategory: {
+    backgroundColor: "#FF6347",
+    borderColor: "#FF6347",
+  },
+  categoryText: {
+    fontSize: 14,
+    color: "#333",
+  },
+  activeText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
