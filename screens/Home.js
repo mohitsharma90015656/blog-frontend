@@ -37,7 +37,7 @@ const Home = () => {
   const [bookmarkedBlog, setBookmarkedBlog] = useState(false);
   const accessToken = isUserLoggedIn.token || null;
   const userData = isUserLoggedIn.user || null;
-  console.log(blogLatestListData);
+  
   useFocusEffect(
     React.useCallback(() => {
       setLoading(true);
