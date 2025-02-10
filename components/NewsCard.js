@@ -29,11 +29,11 @@ const NewsCard = ({ onPress, item, isUserLoggedIn, onPressBookmarked }) => {
           </Text>
         </View>
         {isUserLoggedIn && (
-          <TouchableOpacity onPress={onPressBookmarked} style={{padding: 8}}>
+          <TouchableOpacity onPress={onPressBookmarked} style={{padding: 12}}>
             <Fontisto
               name={item?.isBookmarked ? "bookmark-alt" : "bookmark"}
               size={20}
-              color="black"
+              color={item?.isBookmarked ? "tomato" : "black"}
             />
           </TouchableOpacity>
         )}
