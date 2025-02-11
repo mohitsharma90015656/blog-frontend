@@ -52,7 +52,7 @@ const Home = () => {
 
   const fetchReportList = async (selectedCategory) => {
     const reqObj = {
-      title : "",
+      title: "",
       category: selectedCategory == 1 ? "" : selectedCategory,
     };
     try {
@@ -120,86 +120,15 @@ const Home = () => {
         rtIcon={<FontAwesome name="bell-o" size={24} color="black" />}
         profileIconClr={"black"}
       />
-      <View style={{}}>
-        <FlatList
-          data={blogLatestListData}
-          nestedScrollEnabled={true}
-          showsVerticalScrollIndicator={false}
-          horizontal
-          contentContainerStyle={{ paddingHorizontal: 12 }}
-          keyExtractor={(item, index) => index}
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("blogDetails", { blogId: item?._id })
-              }
-              activeOpacity={10}
-            >
-              <View style={[styles.card, { width: width * 0.85 }]}>
-                <ImageBackground
-                  source={{
-                    uri: item?.blogImage,
-                  }}
-                  style={styles.image}
-                  imageStyle={{ borderRadius: 12 }}
-                >
-                  <View style={styles.details}>
-                    <Text style={styles.author}>
-                      {item?.owner.fullName} • {item?.category.name}
-                    </Text>
-                    <Text style={styles.title}>{item?.title}</Text>
-                  </View>
-                </ImageBackground>
-              </View>
-            </TouchableOpacity>
-          )}
-        />
-      </View>
       {/* <ScrollView showsVerticalScrollIndicator={false}> */}
-      <View style={{}}>
-        <Text
-          style={{
-            fontSize: 16,
-            fontWeight: 500,
-            paddingHorizontal: 12,
-            paddingTop: 8,
-          }}
-        >
-          For You
-        </Text>
-        <FlatList
-          data={categoryList}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 12, paddingTop: 16 }}
-          keyExtractor={(item, index) => index}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[
-                styles.categoryItem,
-                selectedCategory === item?._id && styles.activeCategory,
-              ]}
-              onPress={() => setSelectedCategory(item?._id)}
-            >
-              <Text
-                style={[
-                  styles.categoryText,
-                  selectedCategory === item?._id && styles.activeText,
-                ]}
-              >
-                {item?.name}
-              </Text>
-            </TouchableOpacity>
-          )}
-        />
-      </View>
-      <View style={{ flex: 1, paddingTop: 8, marginTop: 12 }}>
+
+      <View style={{ flex: 1 }}>
         <FlatList
           data={blogListData}
           nestedScrollEnabled={true}
           showsVerticalScrollIndicator={false}
           keyExtractor={(item, index) => index}
+          stickyHeaderIndices={[0]}
           renderItem={({ item }) => (
             <NewsCard
               onPress={() =>
@@ -213,13 +142,95 @@ const Home = () => {
           )}
           ListHeaderComponent={
             <>
-              <>
-                {loading ? (
-                  <View style={{ padding: 16 }}>
-                    <ActivityIndicator size={"large"} />
+              {loading ? (
+                <View style={{ padding: 16 }}>
+                  <ActivityIndicator size={"large"} />
+                </View>
+              ) : (
+                <>
+                  <View style={{}}>
+                    <FlatList
+                      data={blogLatestListData}
+                      nestedScrollEnabled={true}
+                      showsVerticalScrollIndicator={false}
+                      horizontal
+                      contentContainerStyle={{ paddingHorizontal: 12 }}
+                      keyExtractor={(item, index) => index}
+                      showsHorizontalScrollIndicator={false}
+                      renderItem={({ item }) => (
+                        <TouchableOpacity
+                          onPress={() =>
+                            navigation.navigate("blogDetails", {
+                              blogId: item?._id,
+                            })
+                          }
+                          activeOpacity={10}
+                        >
+                          <View style={[styles.card, { width: width * 0.85 }]}>
+                            <ImageBackground
+                              source={{
+                                uri: item?.blogImage,
+                              }}
+                              style={styles.image}
+                              imageStyle={{ borderRadius: 12 }}
+                            >
+                              <View style={styles.details}>
+                                <Text style={styles.author}>
+                                  {item?.owner.fullName} • {item?.category.name}
+                                </Text>
+                                <Text style={styles.title}>{item?.title}</Text>
+                              </View>
+                            </ImageBackground>
+                          </View>
+                        </TouchableOpacity>
+                      )}
+                    />
                   </View>
-                ) : null}
-              </>
+
+                  <View style={{ paddingBottom: 16 }}>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 500,
+                        paddingHorizontal: 12,
+                        paddingTop: 8,
+                      }}
+                    >
+                      For You
+                    </Text>
+                    <FlatList
+                      data={categoryList}
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={{
+                        paddingHorizontal: 12,
+                        paddingTop: 16,
+                      }}
+                      keyExtractor={(item, index) => index}
+                      renderItem={({ item }) => (
+                        <TouchableOpacity
+                          style={[
+                            styles.categoryItem,
+                            selectedCategory === item?._id &&
+                              styles.activeCategory,
+                          ]}
+                          onPress={() => setSelectedCategory(item?._id)}
+                        >
+                          <Text
+                            style={[
+                              styles.categoryText,
+                              selectedCategory === item?._id &&
+                                styles.activeText,
+                            ]}
+                          >
+                            {item?.name}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    />
+                  </View>
+                </>
+              )}
             </>
           }
         />

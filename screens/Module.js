@@ -36,7 +36,7 @@ const Module = () => {
         fetchMyBlogList();
       }
       return () => {};
-    }, [])
+    }, [navigation])
   );
 
   const fetchMyBlogList = async () => {
