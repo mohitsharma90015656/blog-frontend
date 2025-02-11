@@ -28,8 +28,9 @@ import Header from "../components/Header";
 import { FontAwesome } from "@expo/vector-icons";
 import Animated, { useSharedValue, withTiming } from "react-native-reanimated";
 import * as ImagePicker from "expo-image-picker";
-import { Modal, Portal, SegmentedButtons } from "react-native-paper";
+import { FAB, Modal, Portal, SegmentedButtons } from "react-native-paper";
 import NewsCard from "../components/NewsCard";
+import { useSnackbar } from "../context/SnackBarContext";
 
 const Profile = () => {
   const categories = ["Posts", "Liked", "Latest"];
@@ -43,6 +44,8 @@ const Profile = () => {
   const isAuthenticated = auth.isAuthenticated || false;
   const userData = auth.user || null;
   const accessToken = auth.token || null;
+
+  const { showSnackbar } = useSnackbar();
 
   const [loading, setLoading] = useState(false);
   const [bookmarkedBlog, setBookmarkedBlog] = useState(false);
@@ -185,6 +188,7 @@ const Profile = () => {
         );
         clearInputFields();
         navigation.navigate("Home");
+        showSnackbar("Login successful", { duration: 3000 });
       }
     } catch (error) {
       console.error("Login failed:", error.response?.data || error.message);
@@ -290,7 +294,7 @@ const Profile = () => {
             </View>
             <View style={styles.activities}>
               <TouchableOpacity style={styles.activity}>
-                <Text style={styles.number}>1,250</Text>
+                <Text style={styles.number}>{userData?.blogCount}</Text>
                 <Text style={styles.text}>Posts</Text>
               </TouchableOpacity>
               <View style={styles.verticalDivider} />
@@ -533,6 +537,15 @@ const Profile = () => {
           </View>
         </Modal>
       </Portal>
+
+      <FAB
+        icon="plus"
+        style={styles.fab}
+        onPress={() =>
+          navigation.navigate(accessToken ? "createBlog" : "Profile")
+        }
+        color="white"
+      />
     </SafeAreaView>
   );
 };
@@ -665,8 +678,8 @@ const styles = StyleSheet.create({
   bgImage: {
     height: 180,
     width: "100%",
-    objectFit: 'fill',
-    opacity: 0.7
+    objectFit: "fill",
+    opacity: 0.7,
   },
   profileImg: {
     height: 130,
@@ -690,7 +703,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     marginHorizontal: 12,
-    marginTop: 20,
+    marginTop: 10,
     backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#ddd",
@@ -735,5 +748,17 @@ const styles = StyleSheet.create({
   activeText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  fab: {
+    position: "absolute",
+    margin: 16,
+    right: 10,
+    bottom: 10,
+    backgroundColor: "black",
+    color: "white",
+    height: 50,
+    width: 50,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
