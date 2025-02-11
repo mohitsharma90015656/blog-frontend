@@ -28,7 +28,7 @@ const Home = () => {
     "Sports",
     "Tech",
   ];
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("1");
   const navigation = useNavigation();
   const [blogListData, setBlogListData] = useState([]);
   const [blogLatestListData, setBlogLatestListData] = useState([]);
@@ -37,21 +37,49 @@ const Home = () => {
   const [bookmarkedBlog, setBookmarkedBlog] = useState(false);
   const accessToken = isUserLoggedIn.token || null;
   const userData = isUserLoggedIn.user || null;
-  
+  const [categoryList, setCategoryListData] = useState([]);
+
   useFocusEffect(
     React.useCallback(() => {
       setLoading(true);
-      fetchReportList();
+      setBlogListData([]);
+      fetchCategoryList();
+      fetchReportList(selectedCategory);
       fetchLatestBlogList();
       return () => {};
-    }, [])
+    }, [navigation, selectedCategory])
   );
 
-  const fetchReportList = async () => {
+  const fetchReportList = async (selectedCategory) => {
+    const reqObj = {
+      title : "",
+      category: selectedCategory == 1 ? "" : selectedCategory,
+    };
     try {
-      const response = await axios.get(`${BASE_URL}api/v1/blog/blogList`);
-      setLoading(false);
+      const response = await axios.post(
+        `${BASE_URL}api/v1/blog/blogList`,
+        reqObj
+      );
       setBlogListData(response?.data?.data);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.error("Error fetching report list:", error);
+      throw error;
+    }
+  };
+
+  const fetchCategoryList = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}api/v1/blog/getCategoryList`
+      );
+      response?.data?.data.unshift({
+        _id: "1",
+        description: "This includes all categories",
+        name: "All",
+      });
+      setCategoryListData(response?.data?.data);
     } catch (error) {
       setLoading(false);
       console.error("Error fetching report list:", error);
@@ -62,7 +90,6 @@ const Home = () => {
   const fetchLatestBlogList = async () => {
     try {
       const response = await axios.get(`${BASE_URL}api/v1/blog/latest-blog`);
-      setLoading(false);
       setBlogLatestListData(response?.data.blogs);
     } catch (error) {
       setLoading(false);
@@ -142,26 +169,26 @@ const Home = () => {
           For You
         </Text>
         <FlatList
-          data={categories}
+          data={categoryList}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 12, paddingTop: 16 }}
-          keyExtractor={(item) => item}
+          keyExtractor={(item, index) => index}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={[
                 styles.categoryItem,
-                selectedCategory === item && styles.activeCategory,
+                selectedCategory === item?._id && styles.activeCategory,
               ]}
-              onPress={() => setSelectedCategory(item)}
+              onPress={() => setSelectedCategory(item?._id)}
             >
               <Text
                 style={[
                   styles.categoryText,
-                  selectedCategory === item && styles.activeText,
+                  selectedCategory === item?._id && styles.activeText,
                 ]}
               >
-                {item}
+                {item?.name}
               </Text>
             </TouchableOpacity>
           )}
