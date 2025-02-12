@@ -43,7 +43,7 @@ const BlogDetails = (props) => {
   const [liked, setLiked] = useState(false);
 
   useEffect(() => {
-    if (blogDetails?.likeBy?.includes(auth?.user._id)) {
+    if (blogDetails?.likeBy?.includes(auth?.user?._id)) {
       setLiked(true);
     } else {
       setLiked(false);
@@ -58,7 +58,7 @@ const BlogDetails = (props) => {
 
     socket.on("updateComments", ({ blogId: updatedBlogId, comment }) => {
       setBlogDetails((prev) =>
-        prev && prev._id === updatedBlogId
+        prev && prev?._id === updatedBlogId
           ? {
               ...prev,
               commentedBy: [{ ...comment }, ...(prev.commentedBy || [])],
@@ -68,7 +68,7 @@ const BlogDetails = (props) => {
     });
     socket.on("updateLikes", ({ blogId: updatedBlogId, likeCount, userId }) => {
       setBlogDetails((prev) => {
-        if (!prev || prev._id !== updatedBlogId) return prev;
+        if (!prev || prev?._id !== updatedBlogId) return prev;
 
         const isLiked = prev.likeBy.includes(userId);
 
