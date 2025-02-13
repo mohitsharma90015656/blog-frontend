@@ -1,5 +1,5 @@
 import Swipeable from "react-native-gesture-handler/Swipeable";
-import { GestureHandlerRootView } from "react-native-gesture-handler"; // Import this
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   ActivityIndicator,
   FlatList,
@@ -18,8 +18,11 @@ import { Ionicons } from "@expo/vector-icons";
 import Header from "../components/Header";
 import { FAB } from "react-native-paper";
 import Button from "../components/Button";
+import { useSnackbar } from "../context/SnackBarContext";
 
 const Module = () => {
+  const { showSnackbar } = useSnackbar();
+
   const navigation = useNavigation();
   const auth = useSelector((state) => state.userAuth || {});
   const isAuthenticated = auth.isAuthenticated || false;
@@ -67,7 +70,7 @@ const Module = () => {
   };
 
   const handleDelete = async (itemId) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await axios.delete(
         `${BASE_URL}api/v1/blog/deleteBlog/${itemId}`,
@@ -75,7 +78,12 @@ const Module = () => {
           headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
-      fetchMyBlogList()
+
+      if (response?.data?.status == 200) {
+        showSnackbar("Blog Deleted");
+      }
+
+      fetchMyBlogList();
     } catch (error) {
       setLoading(false);
       console.error("Error fetching report list:", error);
@@ -84,7 +92,7 @@ const Module = () => {
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}> 
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
         {isAuthenticated ? (
           <View style={{ flex: 1 }}>
@@ -131,9 +139,16 @@ const Module = () => {
             />
           </View>
         ) : (
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Text style={{ fontSize: 20, fontWeight: "500" }}>Please Login</Text>
-            <Button title={"Login"} onPress={() => navigation.navigate("Profile")} />
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            <Text style={{ fontSize: 20, fontWeight: "500" }}>
+              Please Login
+            </Text>
+            <Button
+              title={"Login"}
+              onPress={() => navigation.navigate("Profile")}
+            />
           </View>
         )}
         <FAB
@@ -168,7 +183,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: 80,
     // height: "100%",
-    height: 100
+    height: 100,
   },
   deleteText: {
     color: "white",

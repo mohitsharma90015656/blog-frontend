@@ -1,18 +1,21 @@
 import { StyleSheet } from "react-native";
 import { Provider } from "react-redux";
-import store from "./redux/store";
+import store, { persistor } from "./redux/store";
 import StackNavigation from "./navigation/StackNavigation";
 import { PaperProvider } from "react-native-paper";
 import { SnackbarProvider } from "./context/SnackBarContext";
+import { PersistGate } from "redux-persist/integration/react";
 
 export default function App() {
   return (
     <Provider store={store}>
-      <PaperProvider>
-        <SnackbarProvider>
-          <StackNavigation />
-        </SnackbarProvider>
-      </PaperProvider>
+      <PersistGate loading={null} persistor={persistor}>
+        <PaperProvider>
+          <SnackbarProvider>
+            <StackNavigation />
+          </SnackbarProvider>
+        </PaperProvider>
+      </PersistGate>
     </Provider>
   );
 }

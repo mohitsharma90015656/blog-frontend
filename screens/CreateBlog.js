@@ -20,6 +20,7 @@ import { BASE_URL } from "../constants/Config";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { ActivityIndicator } from "react-native";
+import { useSnackbar } from "../context/SnackBarContext";
 
 const CreateBlog = () => {
   const [title, setTitle] = useState("");
@@ -34,6 +35,8 @@ const CreateBlog = () => {
   const accessToken = auth.token || null;
   const [categoryList, setCategoryList] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const {showSnackbar} = useSnackbar()
 
   useEffect(() => {
     fetchMyCategoryList();
@@ -110,6 +113,7 @@ const CreateBlog = () => {
       const data = response?.data;
       if (data?.success) {
         navigation.replace("blogDetails", { blogId: data?.data.blogId });
+        showSnackbar("Blog Created")
       }
     } catch (error) {
       setLoading(false);
