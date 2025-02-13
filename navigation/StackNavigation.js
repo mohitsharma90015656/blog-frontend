@@ -5,6 +5,7 @@ import BottomTabNavigation from "./BottomTabNavigation";
 import BlogDetails from "../screens/BlogDetails";
 import Bookmarked from "../screens/Bookmarked";
 import CreateBlog from "../screens/CreateBlog";
+import ChatScreen from "../screens/ChatScreen";
 const StackNavigation = () => {
   const Stack = createNativeStackNavigator();
   return (
@@ -28,6 +29,11 @@ const StackNavigation = () => {
         <Stack.Screen
           name="createBlog"
           component={CreateBlog}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChatScreen"
+          component={ChatScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

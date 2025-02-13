@@ -31,7 +31,7 @@ import {
   disconnectSocket,
   getSocket,
 } from "../constants/Socket";
-
+import GestureRecognizer from 'react-native-swipe-gestures';
 const HEADER_HEIGHT = 80;
 const SHOW_SCROLL_HEIGHT = 250;
 const ANIMATION_DURATION = 300;
@@ -158,8 +158,15 @@ const Home = () => {
       opacity: showHeader.value,
     };
   });
+  const onSwipeLeft = () => {
+    navigation.navigate('ChatScreen');
+  };
 
   return (
+    <GestureRecognizer
+    style={styles.container}
+    onSwipeLeft={onSwipeLeft}
+  >
     <SafeAreaView style={styles.container}>
       <Header
         showProfile={true}
@@ -324,6 +331,7 @@ const Home = () => {
         color="white"
       />
     </SafeAreaView>
+    </GestureRecognizer>
   );
 };
 

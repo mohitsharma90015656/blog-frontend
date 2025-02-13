@@ -1,6 +1,7 @@
 import {
   ActivityIndicator,
   Image,
+  ImageBackground,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -23,8 +24,6 @@ import {
   disconnectSocket,
   getSocket,
 } from "../constants/Socket";
-
-
 
 const BlogDetails = (props) => {
   const navigation = useNavigation();
@@ -148,133 +147,138 @@ const BlogDetails = (props) => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-      <View style={{ padding: 12, paddingLeft: 16, gap: 16, flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: "white" }}>
+      <View style={{ flex: 1 }}>
+        <ImageBackground
+          source={{
+            uri: blogDetails?.blogImage,
+          }}
+          style={styles.blogImage}
+        >
+          <SafeAreaView style={styles.header}>
+            <Ionicons
+              name="arrow-back"
+              size={28}
+              color="white"
+              onPress={() => navigation.goBack()}
+            />
+          </SafeAreaView>
+        </ImageBackground>
         <View
           style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            paddingTop: Platform.OS == "ios" ? 0 : 20,
+            flex: 1,
+            zIndex: 999,
+            marginTop: -50,
+            backgroundColor: "white",
+            borderTopLeftRadius: 12,
+            borderTopRightRadius: 12,
+            padding: 16,
+            paddingTop: 0,
           }}
         >
-          <Ionicons
-            name="arrow-back"
-            size={28}
-            color="black"
-            onPress={() => navigation.goBack()}
-          />
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {loading ? (
+              <View style={{ paddingTop: 12 }}>
+                <ActivityIndicator size={"large"} />
+              </View>
+            ) : (
+              <View style={{ flex: 1, paddingTop: 12 }}>
+                <View
+                  style={{
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexDirection: "row",
+                    paddingTop: 12,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
+                  >
+                    {blogDetails?.owner?.fullName && (
+                      <Text style={{ fontSize: 14, fontWeight: 500 }}>
+                        By{" "}
+                        <Text style={{ color: "gray", fontSize: 16 }}>
+                          {blogDetails?.owner?.fullName}
+                        </Text>
+                      </Text>
+                    )}
+                  </View>
+                </View>
 
-          {isAuthenticated && (
-            <AntDesign
-              name={liked ? "heart" : "hearto"}
-              size={26}
-              color={liked ? "red" : "black"}
-              onPress={() => handleLike(blogId)}
-            />
-          )}
-        </View>
+                <View style={{ gap: 12, paddingTop: 16 }}>
+                  <Text style={{ fontSize: 20, fontWeight: 500 }}>
+                    {blogDetails?.title}
+                  </Text>
+                  <Text>{blogDetails?.description}</Text>
+                </View>
+              </View>
+            )}
 
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {loading ? (
-            <View style={{ padding: 16 }}>
-              <ActivityIndicator size={"large"} />
-            </View>
-          ) : (
-            <View style={{ flex: 1 }}>
-              <Image
-                source={{ uri: blogDetails?.blogImage || BLOG_DEFAULT_IMAGE }}
-                style={styles.blogImage}
-              />
+            {accessToken && loading == false && (
               <View
                 style={{
-                  alignItems: "center",
-                  justifyContent: "space-between",
                   flexDirection: "row",
-                  paddingTop: 12,
+                  gap: 30,
+                  alignItems: "center",
+                  paddingTop: 16,
+                  paddingBottom: 12
                 }}
               >
-                <View
-                  style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
-                >
-                  {blogDetails?.owner?.fullName && (
-                    <Text style={{ fontSize: 14, fontWeight: 500 }}>
-                      By{" "}
-                      <Text style={{ color: "gray", fontSize: 16 }}>
-                        {blogDetails?.owner?.fullName}
-                      </Text>
-                    </Text>
-                  )}
-                </View>
-              </View>
-
-              <View style={{ gap: 12, paddingTop: 16 }}>
-                <Text style={{ fontSize: 20, fontWeight: 500 }}>
-                  {blogDetails?.title}
-                </Text>
-                <Text>{blogDetails?.description}</Text>
-              </View>
-            </View>
-          )}
-
-          {accessToken && (
-            <TouchableOpacity onPress={toggleModal}>
-              <View style={{ paddingTop: 16, flexDirection: "row" }}>
-                <View style={styles.commentBox}>
-                  <Text style={{ marginLeft: 12 }}>Add comment</Text>
-                  <MaterialIcons name="send" size={20} color={"gray"} />
-                </View>
-              </View>
-            </TouchableOpacity>
-          )}
-
-          <View style={{ paddingTop: 12 }}>
-            {blogDetails?.commentedBy?.map((item, index) => (
-              <View key={index} style={styles.commentCard}>
-                <View
-                  style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
-                >
-                  <Image
-                    source={{ uri: item?.user?.avatar }}
-                    style={styles.commentAvatar}
+                <TouchableOpacity onPress={toggleModal} style={{flex: 1}}>
+                  <View style={{flexDirection: "row" }}>
+                    <View style={[styles.commentBox,{flex: 1}]}>
+                      <Text style={{ marginLeft: 12 }}>Comment</Text>
+                      <MaterialIcons
+                        name="send"
+                        size={20}
+                        color={"gray"}
+                        style={{ right: 12 }}
+                      />
+                    </View>
+                  </View>
+                </TouchableOpacity>
+                {isAuthenticated && (
+                  <AntDesign
+                    name={liked ? "heart" : "hearto"}
+                    size={26}
+                    color={liked ? "red" : "black"}
+                    onPress={() => handleLike(blogId)}
+                    style={{right: 12}}
                   />
-                  <Text style={{ fontSize: 16 }}>{item?.user?.fullName}</Text>
-                </View>
-                <Text style={{ fontSize: 14, paddingTop: 4 }}>
-                  {item?.comment}
-                </Text>
+                )}
               </View>
-            ))}
-          </View>
-        </ScrollView>
+            )}
+
+            <View style={{ paddingTop: 12 }}>
+              {blogDetails?.commentedBy?.map((item, index) => (
+                <View key={index} style={styles.commentCard}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
+                  >
+                    <Image
+                      source={{ uri: item?.user?.avatar }}
+                      style={styles.commentAvatar}
+                    />
+                    <Text style={{ fontSize: 16 }}>{item?.user?.fullName}</Text>
+                  </View>
+                  <Text style={{ fontSize: 14, paddingTop: 4 }}>
+                    {item?.comment}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
       </View>
 
-      {/* {isModalVisible && (
-        <Modal
-          isVisible={isModalVisible}
-          onBackdropPress={toggleModal}
-          onBackButtonPress={toggleModal}
-          style={styles.modal}
-        >
-          <View style={styles.modalInput}>
-            <TextInput
-              ref={(input) => (textInputRef = input)}
-              style={styles.inputField}
-              placeholder={"Add comment"}
-              value={comment}
-              onChangeText={handleTextChange}
-              placeholderTextColor={"gray"}
-              autoFocus
-            />
-            <TouchableOpacity
-              onPress={() => handleCommentAdd(blogId)}
-              disabled={!comment}
-            >
-              <MaterialIcons name="send" size={20} color={"lightgreen"} />
-            </TouchableOpacity>
-          </View>
-        </Modal>
-      )} */}
       {isModalVisible ? (
         <Modal
           isVisible={isModalVisible}
@@ -333,22 +337,21 @@ const BlogDetails = (props) => {
           </View>
         </Modal>
       ) : null}
-    </SafeAreaView>
+    </View>
   );
 };
 
 export default BlogDetails;
 
 const styles = StyleSheet.create({
-  blogImage: { width: "100%", height: 220, borderRadius: 8, paddingTop: 12 },
+  blogImage: { width: "100%", height: 350 },
   commentBox: {
-    width: "100%",
     flexDirection: "row",
     borderRadius: 8,
     alignItems: "center",
     backgroundColor: "white",
     justifyContent: "space-between",
-    height: 50,
+    height: 45,
     borderWidth: 1,
     borderColor: "lightgray",
   },
@@ -369,4 +372,10 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   inputField: { flex: 1, borderRadius: 8, height: 65, padding: 8 },
+  header: {
+    margin: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
 });
