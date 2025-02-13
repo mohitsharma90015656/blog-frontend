@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useState } from "react";
+import { Text } from "react-native";
 import { Portal, Snackbar } from "react-native-paper";
 
 const SnackbarContext = createContext();
@@ -29,8 +30,11 @@ export const SnackbarProvider = ({ children }) => {
           onDismiss={hideSnackbar}
           duration={duration}
           action={action}
+          style={{
+            backgroundColor: "#FF6347",
+          }}
         >
-          {message}
+          <Text style={{color: 'black', fontWeight: 500}}>{message}</Text>
         </Snackbar>
       </Portal>
     </SnackbarContext.Provider>
