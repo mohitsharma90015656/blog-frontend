@@ -24,7 +24,7 @@ import {
   getSocket,
 } from "../constants/Socket";
 
-const socket = io(BASE_URL); // Connect to backend server
+
 
 const BlogDetails = (props) => {
   const navigation = useNavigation();

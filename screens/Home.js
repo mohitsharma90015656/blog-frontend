@@ -26,6 +26,11 @@ import Animated, {
   withTiming,
   useDerivedValue,
 } from "react-native-reanimated";
+import {
+  connectSocket,
+  disconnectSocket,
+  getSocket,
+} from "../constants/Socket";
 
 const HEADER_HEIGHT = 80;
 const SHOW_SCROLL_HEIGHT = 250;
@@ -41,17 +46,32 @@ const Home = () => {
   const accessToken = isUserLoggedIn.token || null;
   const userData = isUserLoggedIn.user || null;
   const [categoryList, setCategoryListData] = useState([]);
-
+  const socket = getSocket();
+  
   useFocusEffect(
     React.useCallback(() => {
       setLoading(true);
-      // setBlogListData([]);
       fetchCategoryList();
       fetchReportList(selectedCategory);
       fetchLatestBlogList();
       return () => {};
     }, [navigation, selectedCategory])
   );
+
+  useEffect(() => {
+    connectSocket();
+    socket.on("updateBookmark", ({ blogId, userId }) => {
+      setBlogListData((prevBlogs) =>
+        prevBlogs.map((blog) =>
+          blog._id === blogId ? { ...blog, isBookmarked: !blog.isBookmarked } : blog
+        )
+      );
+    });
+    return () => {
+      disconnectSocket();
+      socket.off("updateBookmark");
+    };
+  }, []);
 
   const fetchReportList = async (selectedCategory) => {
     const reqObj = {
@@ -195,6 +215,7 @@ const Home = () => {
         keyExtractor={(item) => item.key}
         onScroll={scrollHandler}
         scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 500 }}
         renderItem={({ item }) => (
           <NewsCard
