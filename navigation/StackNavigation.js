@@ -5,6 +5,7 @@ import BottomTabNavigation from "./BottomTabNavigation";
 import BlogDetails from "../screens/BlogDetails";
 import Bookmarked from "../screens/Bookmarked";
 import CreateBlog from "../screens/CreateBlog";
+import UserListScreen from "../screens/UserListScreen";
 import ChatScreen from "../screens/ChatScreen";
 const StackNavigation = () => {
   const Stack = createNativeStackNavigator();
@@ -32,7 +33,12 @@ const StackNavigation = () => {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="ChatScreen"
+          name="Users"
+          component={UserListScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Chat"
           component={ChatScreen}
           options={{ headerShown: false }}
         />

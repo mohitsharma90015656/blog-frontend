@@ -159,7 +159,7 @@ const Home = () => {
     };
   });
   const onSwipeLeft = () => {
-    navigation.navigate('ChatScreen');
+    navigation.navigate('Users');
   };
 
   return (
