@@ -40,10 +40,10 @@ import { FAB, Modal, Portal, SegmentedButtons } from "react-native-paper";
 import NewsCard from "../components/NewsCard";
 import { useSnackbar } from "../context/SnackBarContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import LinearGradient from "react-native-linear-gradient";
+import { LinearGradient } from "expo-linear-gradient";
 
 //For Animated Scroll
-const posterSize = Dimensions.get("screen").height / 3;
+const posterSize = Dimensions.get("screen").height / 2;
 const headerTop = 44 - 16;
 
 const ScreenHeader = ({ sv, avatar, fullName }) => {
@@ -116,9 +116,20 @@ const ScreenHeader = ({ sv, avatar, fullName }) => {
   );
 };
 
-const PosterImage = ({ sv, avatar }) => {
+const PosterImage = ({
+  sv,
+  avatar,
+  fullName,
+  userName,
+  posts,
+  followers,
+  followings,
+}) => {
   const inset = useSafeAreaInsets();
   const layoutY = useSharedValue(0);
+
+  const AnimatedLinearGradient =
+    Animated.createAnimatedComponent(LinearGradient);
 
   const opacityAnim = useAnimatedStyle(() => {
     return {
@@ -144,6 +155,43 @@ const PosterImage = ({ sv, avatar }) => {
     };
   });
 
+  const textAnim = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(
+        sv.value,
+        [-posterSize / 8, 0, posterSize - (headerTop + inset.top) / 0.8],
+        [0, 1, 0],
+        Extrapolation.CLAMP
+      ),
+      transform: [
+        {
+          scale: interpolate(
+            sv.value,
+            [-posterSize / 8, 0, (posterSize - (headerTop + inset.top)) / 2],
+            [1.1, 1, 0.95],
+            "clamp"
+          ),
+        },
+        {
+          translateY: interpolate(
+            sv.value,
+            [layoutY.value - 1, layoutY.value, layoutY.value + 1],
+            [0, 0, -1]
+          ),
+        },
+      ],
+    };
+  });
+
+  const gradientAnim = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(sv.value, [-50, 0], [0, 1], {
+        extrapolateLeft: "clamp",
+        extrapolateRight: "clamp",
+      }),
+    };
+  });
+
   return (
     <Animated.View
       style={[
@@ -151,6 +199,7 @@ const PosterImage = ({ sv, avatar }) => {
           height: Dimensions.get("screen").height / 2,
           width: Dimensions.get("screen").width,
           position: "absolute",
+          overflow: "hidden",
         },
         opacityAnim,
       ]}
@@ -164,6 +213,107 @@ const PosterImage = ({ sv, avatar }) => {
           scaleAnim,
         ]}
       />
+      <LinearGradient
+        style={[
+          scaleAnim,
+          {
+            position: "absolute",
+            height: posterSize / 2,
+            bottom: 0,
+            width: "100%",
+            justifyContent: "flex-start", // Align children to the top
+            paddingHorizontal: 15,
+            paddingVertical: 15,
+          },
+        ]}
+        colors={[
+          `rgba(0,0,0,0.7)`,
+          `rgba(0,0,0,0.7)`,
+          `rgba(0,0,0,0.7)`,
+          `rgba(0,0,0,0.7)`,
+          `rgba(0,0,0,0.7)`,
+          `rgba(0,0,0,0.7)`,
+        ]}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingBottom: 14,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Image
+              source={{ uri: avatar }}
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                borderWidth: 2,
+                borderColor: "white",
+              }}
+            />
+            <View style={{ marginLeft: 20 }}>
+              <Text
+                style={{ color: "white", fontWeight: "bold", fontSize: 18 }}
+              >
+                {fullName}
+              </Text>
+              <Text
+                style={{ color: "white", fontSize: 14 }}
+              >{`@${userName}`}</Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: "white",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <FontAwesome name="edit" size={24} color="black" />
+          </TouchableOpacity>
+        </View>
+
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-around",
+            marginTop: 20,
+          }}
+        >
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ color: "white", fontWeight: "bold", fontSize: 22 }}>
+              {posts}
+            </Text>
+            <Text style={{ color: "gray", fontSize: 15, marginTop: 5 }}>
+              Posts
+            </Text>
+          </View>
+          <View style={styles.verticalDivider} />
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ color: "white", fontWeight: "bold", fontSize: 22 }}>
+              {followers}
+            </Text>
+            <Text style={{ color: "gray", fontSize: 15, marginTop: 5 }}>
+              Followers
+            </Text>
+          </View>
+          <View style={styles.verticalDivider} />
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ color: "white", fontWeight: "bold", fontSize: 22 }}>
+              {followings}
+            </Text>
+            <Text style={{ color: "gray", fontSize: 15, marginTop: 5 }}>
+              Following
+            </Text>
+          </View>
+        </View>
+      </LinearGradient>
     </Animated.View>
   );
 };
@@ -441,7 +591,15 @@ const Profile = () => {
               fullName={userData?.fullName}
               avatar={userData?.avatar}
             />
-            <PosterImage sv={sv} avatar={userData?.avatar} />
+            <PosterImage
+              sv={sv}
+              avatar={userData?.avatar}
+              fullName={userData?.fullName}
+              userName={userData?.username}
+              posts={userData?.blogCount}
+              followers={userData.followedBy ? userData.followedBy.length : 0}
+              followings={userData.following ? userData.following.length : 0}
+            />
             <Animated.View style={{ flex: 1 }}>
               <Animated.ScrollView
                 onScroll={scrollHandler}
@@ -531,126 +689,6 @@ const Profile = () => {
               </Animated.ScrollView>
             </Animated.View>
           </Animated.View>
-
-          {/* <Header
-            title={`@${userData?.username}`}
-            titleColor={"black"}
-            showRightIcon={true}
-            rtIcon={<FontAwesome name="gear" size={24} color="black" />}
-          /> */}
-
-          {/* <View style={styles.profileHeader}>
-            <Image
-              source={{
-                uri: "https://images.unsplash.com/photo-1528465424850-54d22f092f9d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-              }}
-              style={styles.bgImage}
-            />
-            <View style={styles.profileInfo}>
-              {userData?.avatar ? (
-                <Image
-                  style={styles.profileImg}
-                  source={{ uri: userData?.avatar }}
-                />
-              ) : (
-                <Image
-                  style={styles.profileImg}
-                  source={{
-                    uri: "https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/no-profile-picture-icon.png",
-                  }}
-                />
-              )}
-
-              <Text style={styles.username}>{userData?.fullName}</Text>
-              <Text style={styles.designation}>{`@${userData?.username}`}</Text>
-            </View>
-            <View style={styles.activities}>
-              <TouchableOpacity style={styles.activity}>
-                <Text style={styles.number}>{userData?.blogCount}</Text>
-                <Text style={styles.text}>Posts</Text>
-              </TouchableOpacity>
-              <View style={styles.verticalDivider} />
-              <TouchableOpacity style={styles.activity}>
-                <Text style={styles.number}>
-                  {userData.followedBy ? userData.followedBy.length : 0}
-                </Text>
-                <Text style={styles.text}>Followers</Text>
-              </TouchableOpacity>
-              <View style={styles.verticalDivider} />
-              <TouchableOpacity style={styles.activity}>
-                <Text style={styles.number}>
-                  {userData.following ? userData.following.length : 0}
-                </Text>
-                <Text style={styles.text}>Following</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View
-            style={{
-              paddingHorizontal: 12,
-              paddingTop: 16,
-              paddingBottom: 16,
-              justifyContent: "space-around",
-            }}
-          >
-            <FlatList
-              data={categories}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[
-                    styles.categoryItem,
-                    selectedCategory === item && styles.activeCategory,
-                  ]}
-                  onPress={() => setSelectedCategory(item)}
-                >
-                  <Text
-                    style={[
-                      styles.categoryText,
-                      selectedCategory === item && styles.activeText,
-                    ]}
-                  >
-                    {item}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            />
-          </View>
-
-          <FlatList
-            data={blogListData}
-            nestedScrollEnabled={true}
-            showsVerticalScrollIndicator={false}
-            style={{ flex: 1 }}
-            contentContainerStyle={{ paddingTop: 8 }}
-            keyExtractor={(item, index) => index}
-            renderItem={({ item }) => (
-              <NewsCard
-                onPress={() =>
-                  navigation.navigate("blogDetails", {
-                    blogId: item?._id,
-                  })
-                }
-                isUserLoggedIn={accessToken}
-                item={item}
-                bookmarkedBlog={bookmarkedBlog}
-                onPressBookmarked={() => bookmarkBlog(item?._id)}
-              />
-            )}
-            ListHeaderComponent={
-              <>
-                <>
-                  {loading ? (
-                    <View style={{ padding: 16 }}>
-                      <ActivityIndicator size={"large"} />
-                    </View>
-                  ) : null}
-                </>
-              </>
-            }
-          /> */}
         </>
       ) : (
         <SafeAreaView style={styles.container}>
@@ -942,63 +980,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 10,
     textAlign: "center",
-  },
-  profileHeader: {
-    alignItems: "center",
-    backgroundColor: "#fff",
-  },
-  profileInfo: {
-    alignItems: "center",
-    marginTop: -20,
-  },
-  bgImage: {
-    height: Dimensions.get("screen").height / 2,
-    width: Dimensions.get("screen").width,
-    position: "absolute",
-    objectFit: "cover",
-  },
-  profileImg: {
-    height: 130,
-    width: 130,
-    borderRadius: 80,
-    marginTop: -60,
-    borderWidth: 3,
-    borderColor: "#fff",
-  },
-  username: {
-    color: "#000",
-    marginTop: 10,
-    fontSize: 20,
-  },
-  designation: {
-    alignItems: "center",
-    color: "#000",
-    marginTop: 5,
-  },
-  activities: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginHorizontal: 12,
-    marginTop: 10,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    elevation: 5,
-    borderRadius: 10,
-    paddingVertical: 20,
-  },
-  activity: {
-    alignItems: "center",
-    flex: 1,
-  },
-  number: {
-    fontSize: 22,
-    fontWeight: "bold",
-  },
-  text: {
-    fontSize: 15,
-    marginTop: 5,
-    color: "gray",
   },
   verticalDivider: {
     width: 1,
