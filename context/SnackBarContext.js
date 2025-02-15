@@ -34,7 +34,7 @@ export const SnackbarProvider = ({ children }) => {
             backgroundColor: "#FF6347",
           }}
         >
-          <Text style={{color: 'black', fontWeight: 500}}>{message}</Text>
+          <Text style={{color: 'white', fontWeight: 500}}>{message}</Text>
         </Snackbar>
       </Portal>
     </SnackbarContext.Provider>

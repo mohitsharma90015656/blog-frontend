@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from "react-native";
 import io from "socket.io-client";
 import { BASE_URL, getTimeAgo } from "../constants/Config";
@@ -18,9 +19,7 @@ import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import moment from "moment";
 
-const SOCKET_URL = BASE_URL; // Change to your backend URL when deploying
-
-const socket = io(SOCKET_URL);
+const socket = io(BASE_URL);
 
 const ChatScreen = ({ route }) => {
   const { user } = route?.params;
@@ -30,6 +29,7 @@ const ChatScreen = ({ route }) => {
   const isUserLoggedIn = useSelector((state) => state.userAuth || {});
   const userData = isUserLoggedIn.user || null;
   const currentUserId = userData?._id;
+  const flatListRef = useRef(null); // ✅ Reference for FlatList auto-scroll
 
   useEffect(() => {
     if (!user?._id) return;
@@ -39,14 +39,23 @@ const ChatScreen = ({ route }) => {
     const handleReceiveMessage = (msg) => {
       if (msg.receiverId === currentUserId) {
         setMessages((prevMessages) => [...prevMessages, msg]);
+
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 300);
       }
     };
 
     socket.off("receiveMessage").on("receiveMessage", handleReceiveMessage);
+
     axios
       .get(`${BASE_URL}api/v1/messages/${currentUserId}/${user?._id}`)
       .then((response) => {
         setMessages(response.data.data);
+
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: false });
+        }, 500);
       })
       .catch((error) => console.error("Error loading chat history:", error));
 
@@ -64,16 +73,34 @@ const ChatScreen = ({ route }) => {
         message,
         timestamp,
       };
+
       setMessages((prevMessages) => [...prevMessages, msgData]);
+
       socket.emit("sendMessage", msgData);
-      axios
-        .post(`${BASE_URL}api/v1/messages/send`, msgData)
-        .catch((error) => console.error("Error sending message:", error));
 
       setMessage("");
+
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 300);
     }
   };
-  
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+    };
+  }, []);
+
   return (
     <SafeAreaView style={styles.safeContainer}>
       <KeyboardAvoidingView
@@ -83,15 +110,15 @@ const ChatScreen = ({ route }) => {
         <View style={styles.headerContainer}>
           <Ionicons
             name="arrow-back"
-            size={28}
-            color="black"
+            size={24}
+            color="green"
             onPress={() => navigation.goBack()}
           />
           <Text style={styles.header}>{user?.fullName}</Text>
         </View>
 
-        {/* Messages List */}
         <FlatList
+          ref={flatListRef}
           data={messages}
           keyExtractor={(item, index) => index.toString()}
           style={styles.messagesList}
@@ -105,8 +132,6 @@ const ChatScreen = ({ route }) => {
               }
             >
               <Text style={styles.messageText}>{item.message}</Text>
-
-              {/* Timestamp in bottom right */}
               <View style={styles.timestampContainer}>
                 <Text style={styles.timestampText}>
                   {getTimeAgo(item?.timestamp)}
@@ -116,7 +141,6 @@ const ChatScreen = ({ route }) => {
           )}
         />
 
-        {/* Input Section (Stays Fixed at Bottom) */}
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
@@ -147,10 +171,10 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   header: {
-    fontSize: 20,
-    fontWeight: "bold",
+    fontSize: 18,
+    fontWeight: 500,
     marginLeft: 10,
-    color: "#6200ea",
+    color: "green",
   },
   messagesList: {
     flex: 1,
@@ -182,7 +206,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
-    // position: "absolute",
   },
   timestampText: {
     color: "#e0e0e0",

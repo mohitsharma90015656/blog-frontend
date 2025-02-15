@@ -11,7 +11,7 @@ import {
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import { EvilIcons, FontAwesome } from "@expo/vector-icons";
+import { EvilIcons, FontAwesome, Ionicons } from "@expo/vector-icons";
 import NewsCard from "../components/NewsCard";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { BASE_URL } from "../constants/Config";
@@ -31,7 +31,8 @@ import {
   disconnectSocket,
   getSocket,
 } from "../constants/Socket";
-import GestureRecognizer from 'react-native-swipe-gestures';
+import GestureRecognizer from "react-native-swipe-gestures";
+import { useSnackbar } from "../context/SnackBarContext";
 const HEADER_HEIGHT = 80;
 const SHOW_SCROLL_HEIGHT = 250;
 const ANIMATION_DURATION = 300;
@@ -47,7 +48,7 @@ const Home = () => {
   const userData = isUserLoggedIn.user || null;
   const [categoryList, setCategoryListData] = useState([]);
   const socket = getSocket();
-  
+  const { showSnackbar } = useSnackbar();
   useFocusEffect(
     React.useCallback(() => {
       setLoading(true);
@@ -63,7 +64,9 @@ const Home = () => {
     socket.on("updateBookmark", ({ blogId, userId }) => {
       setBlogListData((prevBlogs) =>
         prevBlogs.map((blog) =>
-          blog._id === blogId ? { ...blog, isBookmarked: !blog.isBookmarked } : blog
+          blog._id === blogId
+            ? { ...blog, isBookmarked: !blog.isBookmarked }
+            : blog
         )
       );
     });
@@ -159,178 +162,193 @@ const Home = () => {
     };
   });
   const onSwipeLeft = () => {
-    navigation.navigate('Users');
+    accessToken
+      ? navigation.navigate("Users")
+      : (showSnackbar("Please login first", { duration: 3000 }),
+        navigation.navigate("Profile"));
   };
 
   return (
-    <GestureRecognizer
-    style={styles.container}
-    onSwipeLeft={onSwipeLeft}
-  >
-    <SafeAreaView style={styles.container}>
-      <Header
-        showProfile={true}
-        showSearchComponent={true}
-        showRightIcon={true}
-        rtIcon={<FontAwesome name="bell-o" size={24} color="black" />}
-        profileIconClr={"black"}
-      />
-      {loading ? (
-        <View style={{ padding: 16 }}>
-          <ActivityIndicator size={"large"} />
-        </View>
-      ) : null}
-
-      <Animated.View style={[styles.header, headerStyle]}>
-        <View style={{}}>
-          <FlatList
-            data={categoryList}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: 12,
-              paddingTop: 16,
-            }}
-            keyExtractor={(item, index) => index}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[
-                  styles.categoryItem,
-                  selectedCategory === item?._id && styles.activeCategory,
-                  {
-                    marginVertical: 20,
-                  },
-                ]}
-                onPress={() => setSelectedCategory(item?._id)}
-              >
-                <Text
-                  style={[
-                    styles.categoryText,
-                    selectedCategory === item?._id && styles.activeText,
-                  ]}
-                >
-                  {item?.name}
-                </Text>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      </Animated.View>
-      <Animated.FlatList
-        data={blogListData}
-        nestedScrollEnabled={true}
-        keyExtractor={(item) => item.key}
-        onScroll={scrollHandler}
-        scrollEventThrottle={16}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 500 }}
-        renderItem={({ item }) => (
-          <NewsCard
-            onPress={() =>
-              navigation.navigate("blogDetails", { blogId: item?._id })
-            }
-            isUserLoggedIn={accessToken}
-            item={item}
-            bookmarkedBlog={bookmarkedBlog}
-            onPressBookmarked={() => bookmarkBlog(item?._id)}
-          />
-        )}
-        ListHeaderComponent={
-          <>
+    <GestureRecognizer style={styles.container} onSwipeLeft={onSwipeLeft}>
+      <SafeAreaView style={styles.container}>
+        <Header
+          showProfile={true}
+          showSearchComponent={true}
+          showRightIcon={true}
+          rtIcon={
             <>
-              <View style={{}}>
-                <FlatList
-                  data={blogLatestListData}
-                  nestedScrollEnabled={true}
-                  showsVerticalScrollIndicator={false}
-                  horizontal
-                  contentContainerStyle={{ paddingHorizontal: 12 }}
-                  keyExtractor={(item, index) => index}
-                  showsHorizontalScrollIndicator={false}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      onPress={() =>
-                        navigation.navigate("blogDetails", {
-                          blogId: item?._id,
-                        })
-                      }
-                      activeOpacity={10}
-                    >
-                      <View style={[styles.card, { width: width * 0.85 }]}>
-                        <ImageBackground
-                          source={{
-                            uri: item?.blogImage,
-                          }}
-                          style={styles.image}
-                          imageStyle={{ borderRadius: 12 }}
-                        >
-                          <View style={styles.details}>
-                            <Text style={styles.author}>
-                              {item?.owner.fullName} • {item?.category.name}
-                            </Text>
-                            <Text style={styles.title}>{item?.title}</Text>
-                          </View>
-                        </ImageBackground>
-                      </View>
-                    </TouchableOpacity>
-                  )}
-                />
-              </View>
-
-              <View style={{ paddingBottom: 16 }}>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: 500,
-                    paddingHorizontal: 12,
-                    paddingTop: 8,
-                  }}
-                >
-                  For You
-                </Text>
-                <FlatList
-                  data={categoryList}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{
-                    paddingHorizontal: 12,
-                    paddingTop: 16,
-                  }}
-                  keyExtractor={(item, index) => index}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={[
-                        styles.categoryItem,
-                        selectedCategory === item?._id && styles.activeCategory,
-                      ]}
-                      onPress={() => setSelectedCategory(item?._id)}
-                    >
-                      <Text
-                        style={[
-                          styles.categoryText,
-                          selectedCategory === item?._id && styles.activeText,
-                        ]}
-                      >
-                        {item?.name}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              </View>
+              <Ionicons
+                name="chatbubble-ellipses-outline"
+                size={28}
+                color="black"
+                onPress={() =>
+                  accessToken
+                    ? navigation.navigate("Users")
+                    : (showSnackbar("Please login first", { duration: 3000 }),
+                      navigation.navigate("Profile"))
+                }
+              />
             </>
-            {/* )} */}
-          </>
-        }
-      />
-      <FAB
-        icon="plus"
-        style={styles.fab}
-        onPress={() =>
-          navigation.navigate(accessToken ? "createBlog" : "Profile")
-        }
-        color="white"
-      />
-    </SafeAreaView>
+          }
+          profileIconClr={"black"}
+        />
+        {loading ? (
+          <View style={{ padding: 16 }}>
+            <ActivityIndicator size={"large"} />
+          </View>
+        ) : null}
+
+        <Animated.View style={[styles.header, headerStyle]}>
+          <View style={{}}>
+            <FlatList
+              data={categoryList}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{
+                paddingHorizontal: 12,
+                paddingTop: 16,
+              }}
+              keyExtractor={(item, index) => index}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.categoryItem,
+                    selectedCategory === item?._id && styles.activeCategory,
+                    {
+                      marginVertical: 20,
+                    },
+                  ]}
+                  onPress={() => setSelectedCategory(item?._id)}
+                >
+                  <Text
+                    style={[
+                      styles.categoryText,
+                      selectedCategory === item?._id && styles.activeText,
+                    ]}
+                  >
+                    {item?.name}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </Animated.View>
+        <Animated.FlatList
+          data={blogListData}
+          nestedScrollEnabled={true}
+          keyExtractor={(item) => item.key}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 500 }}
+          renderItem={({ item }) => (
+            <NewsCard
+              onPress={() =>
+                navigation.navigate("blogDetails", { blogId: item?._id })
+              }
+              isUserLoggedIn={accessToken}
+              item={item}
+              bookmarkedBlog={bookmarkedBlog}
+              onPressBookmarked={() => bookmarkBlog(item?._id)}
+            />
+          )}
+          ListHeaderComponent={
+            <>
+              <>
+                <View style={{}}>
+                  <FlatList
+                    data={blogLatestListData}
+                    nestedScrollEnabled={true}
+                    showsVerticalScrollIndicator={false}
+                    horizontal
+                    contentContainerStyle={{ paddingHorizontal: 12 }}
+                    keyExtractor={(item, index) => index}
+                    showsHorizontalScrollIndicator={false}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity
+                        onPress={() =>
+                          navigation.navigate("blogDetails", {
+                            blogId: item?._id,
+                          })
+                        }
+                        activeOpacity={10}
+                      >
+                        <View style={[styles.card, { width: width * 0.85 }]}>
+                          <ImageBackground
+                            source={{
+                              uri: item?.blogImage,
+                            }}
+                            style={styles.image}
+                            imageStyle={{ borderRadius: 12 }}
+                          >
+                            <View style={styles.details}>
+                              <Text style={styles.author}>
+                                {item?.owner.fullName} • {item?.category.name}
+                              </Text>
+                              <Text style={styles.title}>{item?.title}</Text>
+                            </View>
+                          </ImageBackground>
+                        </View>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </View>
+
+                <View style={{ paddingBottom: 16 }}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 500,
+                      paddingHorizontal: 12,
+                      paddingTop: 8,
+                    }}
+                  >
+                    For You
+                  </Text>
+                  <FlatList
+                    data={categoryList}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{
+                      paddingHorizontal: 12,
+                      paddingTop: 16,
+                    }}
+                    keyExtractor={(item, index) => index}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity
+                        style={[
+                          styles.categoryItem,
+                          selectedCategory === item?._id &&
+                            styles.activeCategory,
+                        ]}
+                        onPress={() => setSelectedCategory(item?._id)}
+                      >
+                        <Text
+                          style={[
+                            styles.categoryText,
+                            selectedCategory === item?._id && styles.activeText,
+                          ]}
+                        >
+                          {item?.name}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </View>
+              </>
+              {/* )} */}
+            </>
+          }
+        />
+        <FAB
+          icon="plus"
+          style={styles.fab}
+          onPress={() =>
+            navigation.navigate(accessToken ? "createBlog" : "Profile")
+          }
+          color="white"
+        />
+      </SafeAreaView>
     </GestureRecognizer>
   );
 };

@@ -17,16 +17,16 @@ export const getTimeAgo = (timestamp) => {
     if (diffInSeconds < 60) {
       return "Just now";
     } else if (diffInMinutes < 60) {
-      return `${diffInMinutes} m ago`;
+      return `${diffInMinutes} m`;
     } else if (diffInHours < 24) {
-      return `${diffInHours} h${diffInHours > 1 ? "s" : ""} ago`;
+      return `${diffInHours} h${diffInHours > 1 ? "s" : ""}`;
     } else if (diffInDays === 1) {
       return "Yesterday";
     } else if (diffInDays < 30) {
-      return `${diffInDays} d ago`;
+      return `${diffInDays} d`;
     } else if (diffInMonths < 12) {
-      return `${diffInMonths} m${diffInMonths > 1 ? "s" : ""} ago`; 
+      return `${diffInMonths} m${diffInMonths > 1 ? "s" : ""}`; 
     } else {
-      return `${diffInYears} y${diffInYears > 1 ? "s" : ""} ago`;
+      return `${diffInYears} y${diffInYears > 1 ? "s" : ""}`;
     }
   };
