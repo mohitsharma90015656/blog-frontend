@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
+  ImageBackground,
 } from "react-native";
 import io from "socket.io-client";
 import { BASE_URL, getTimeAgo } from "../constants/Config";
@@ -29,12 +30,17 @@ const ChatScreen = ({ route }) => {
   const isUserLoggedIn = useSelector((state) => state.userAuth || {});
   const userData = isUserLoggedIn.user || null;
   const currentUserId = userData?._id;
-  const flatListRef = useRef(null); // ✅ Reference for FlatList auto-scroll
+  const flatListRef = useRef(null);
 
   useEffect(() => {
     if (!user?._id) return;
 
     socket.emit("join", currentUserId);
+
+    socket.emit("userInChat", {
+      userId: currentUserId,
+      chattingWith: user._id,
+    });
 
     const handleReceiveMessage = (msg) => {
       if (msg.receiverId === currentUserId) {
@@ -43,16 +49,39 @@ const ChatScreen = ({ route }) => {
         setTimeout(() => {
           flatListRef.current?.scrollToEnd({ animated: true });
         }, 300);
+        socket.emit("markMessagesAsRead", {
+          senderId: msg.senderId,
+          receiverId: currentUserId,
+        });
       }
     };
 
-    socket.off("receiveMessage").on("receiveMessage", handleReceiveMessage);
+    const handleMessagesRead = ({ senderId, receiverId }) => {
+      if (receiverId === currentUserId) {
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.senderId === senderId ? { ...msg, isRead: true } : msg
+          )
+        );
+      }
+    };
+
+    socket.on("receiveMessage", handleReceiveMessage);
+    socket.on("messagesRead", handleMessagesRead);
+    axios
+      .post(`${BASE_URL}api/v1/messages/mark-read`, {
+        senderId: user._id,
+        receiverId: currentUserId,
+      })
+      .then(() => console.log("Messages marked as read"))
+      .catch((error) =>
+        console.error("Error marking messages as read:", error)
+      );
 
     axios
       .get(`${BASE_URL}api/v1/messages/${currentUserId}/${user?._id}`)
       .then((response) => {
         setMessages(response.data.data);
-
         setTimeout(() => {
           flatListRef.current?.scrollToEnd({ animated: false });
         }, 500);
@@ -60,7 +89,9 @@ const ChatScreen = ({ route }) => {
       .catch((error) => console.error("Error loading chat history:", error));
 
     return () => {
+      socket.emit("userLeftChat", currentUserId);
       socket.off("receiveMessage", handleReceiveMessage);
+      socket.off("messagesRead", handleMessagesRead);
     };
   }, [user?._id, currentUserId]);
 
@@ -72,6 +103,7 @@ const ChatScreen = ({ route }) => {
         receiverId: user?._id,
         message,
         timestamp,
+        isRead: false,
       };
 
       setMessages((prevMessages) => [...prevMessages, msgData]);
@@ -79,7 +111,6 @@ const ChatScreen = ({ route }) => {
       socket.emit("sendMessage", msgData);
 
       setMessage("");
-
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 300);
@@ -116,42 +147,57 @@ const ChatScreen = ({ route }) => {
           />
           <Text style={styles.header}>{user?.fullName}</Text>
         </View>
+        <ImageBackground
+          source={{
+            uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzG1j9wU1OMdJV0QSD6JGLWBVoGAtc4MTiYGnpZe5i9616euIesNbWHBVaO48pEgKd23k&usqp=CAU",
+          }}
+          style={{ flex: 1 }}
+        >
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={(item, index) => index.toString()}
+            style={styles.messagesList}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <View
+                style={
+                  item.senderId === currentUserId
+                    ? styles.myMessage
+                    : styles.theirMessage
+                }
+              >
+                <Text style={styles.messageText}>{item.message}</Text>
 
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          keyExtractor={(item, index) => index.toString()}
-          style={styles.messagesList}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View
-              style={
-                item.senderId === currentUserId
-                  ? styles.myMessage
-                  : styles.theirMessage
-              }
-            >
-              <Text style={styles.messageText}>{item.message}</Text>
-              <View style={styles.timestampContainer}>
-                <Text style={styles.timestampText}>
-                  {getTimeAgo(item?.timestamp)}
-                </Text>
+                <View style={styles.timestampContainer}>
+                  <Text style={styles.timestampText}>
+                    {getTimeAgo(item?.timestamp)}
+                  </Text>
+                  {item.senderId === currentUserId && (
+                    <Ionicons
+                      name={item.isRead ? "checkmark-done" : "checkmark"}
+                      size={16}
+                      color={item.isRead ? "blue" : "gray"}
+                      style={styles.readReceiptIcon}
+                    />
+                  )}
+                </View>
               </View>
-            </View>
-          )}
-        />
-
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            value={message}
-            onChangeText={setMessage}
-            placeholder="Type a message..."
+            )}
           />
-          <TouchableOpacity onPress={sendMessage} style={styles.button}>
-            <Text style={styles.buttonText}>Send</Text>
-          </TouchableOpacity>
-        </View>
+
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              value={message}
+              onChangeText={setMessage}
+              placeholder="Message"
+            />
+            <TouchableOpacity onPress={sendMessage} style={styles.button}>
+              <Ionicons name="send" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
+        </ImageBackground>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -160,7 +206,7 @@ const ChatScreen = ({ route }) => {
 const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#fff",
   },
   container: {
     flex: 1,
@@ -169,6 +215,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
+    backgroundColor: "#fff",
   },
   header: {
     fontSize: 18,
@@ -216,22 +263,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
-    borderTopWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "#fff",
   },
   input: {
     flex: 1,
-    padding: 10,
-    borderWidth: 1,
-    borderRadius: 5,
+    padding: 13,
+    borderRadius: 18,
     backgroundColor: "#fff",
   },
   button: {
     marginLeft: 10,
     padding: 10,
-    backgroundColor: "#6200ea",
-    borderRadius: 5,
+    backgroundColor: "#18a668",
+    borderRadius: 50,
+    alignItems: "center",
+    justifyContent: "center",
   },
   buttonText: { color: "white", fontWeight: "bold" },
 });
