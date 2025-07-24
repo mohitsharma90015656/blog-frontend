@@ -162,7 +162,10 @@ const Home = () => {
     };
   });
   const onSwipeLeft = () => {
- 
+    // accessToken
+    //   ? navigation.navigate("Users")
+    //   : (showSnackbar("Please login first", { duration: 3000 }),
+    //     navigation.navigate("Profile"));
   };
 
   return (
